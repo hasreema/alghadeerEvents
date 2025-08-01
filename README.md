@@ -1,3 +1,5 @@
+Al Ghadeer Events – Event Management System
+
 # Al Ghadeer Events - Event Management System
 
 A comprehensive internal event management system for hall owners to manage all aspects of events including event details, payments, employees, requests, expenses, profitability, reminders, and automatic reporting.
@@ -56,6 +58,13 @@ This system is designed specifically for hall owners (not customers) to manage:
 - Email and WhatsApp notifications
 - Push notifications for reminders
 - Manual report generation
+
+## 🌟 Advanced Features
+- **Google Sheets Integration**: Data synchronization with external spreadsheets
+- **Push Notifications**: Real-time alerts for reminders and payments
+- **WhatsApp Integration**: Automated messaging for reports and reminders
+- **File Management**: Receipt uploads and document storage
+- **Export Capabilities**: Excel and PDF export functionality
 
 ## 🚀 Setup Instructions
 
@@ -139,10 +148,14 @@ This system is designed specifically for hall owners (not customers) to manage:
 - Garden
 - Waterfall
 
-## 📞 Contact Information
-- **Company**: Al Ghadeer Events
-- **Email**: alghadeerevents@gmail.com
-- **WhatsApp**: +970595781722
+## 🏗️ Technical Architecture
+- **Backend**: Node.js with Express.js
+- **Database**: MongoDB with Mongoose ODM
+- **Frontend**: Glide (no-code app) + Bootstrap for responsive web
+- **Authentication**: JWT
+- **Integrations**: Google Sheets API, WhatsApp API, Zapier
+- **PDF Generation**: PDFKit
+- **Email**: Gmail SMTP with Nodemailer
 
 ## 🔧 Technical Requirements
 - **Data Source**: Google Sheets
@@ -158,6 +171,10 @@ This system is designed specifically for hall owners (not customers) to manage:
 4. ✅ Reminders with push notifications
 5. ✅ Monthly PDF reports in Hebrew (email + WhatsApp)
 
----
+## 📞 Contact Information
+- **Company**: Al Ghadeer Events
+- **Email**: alghadeerevents@gmail.com
+- **WhatsApp**: +970595781722
 
 **Note**: This system is designed for internal use by hall owners and staff, not for customer-facing operations.
+

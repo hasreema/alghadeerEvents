@@ -1,0 +1,50 @@
+Key,English,Hebrew,Arabic,Context
+dashboard,Dashboard,לוח מחוונים,لوحة التحكم,Navigation
+events,Events,אירועים,الفعاليات,Navigation
+payments,Payments,תשלומים,المدفوعات,Navigation
+employees,Employees,עובדים,الموظفون,Navigation
+reminders,Reminders,תזכורות,التذكيرات,Navigation
+tasks,Tasks,משימות,المهام,Navigation
+reports,Reports,דוחות,التقارير,Navigation
+settings,Settings,הגדרות,الإعدادات,Navigation
+event_name,Event Name,שם האירוע,اسم الحدث,Form Field
+event_type,Event Type,סוג האירוע,نوع الحدث,Form Field
+wedding,Wedding,חתונה,زفاف,Event Type
+henna,Henna,חינה,حناء,Event Type
+engagement,Engagement,אירוסין,خطوبة,Event Type
+graduation,Graduation,סיום,تخرج,Event Type
+other,Other,אחר,أخرى,Event Type
+event_date,Event Date,תאריך האירוע,تاريخ الحدث,Form Field
+location,Location,מיקום,الموقع,Form Field
+hall_floor_0,Hall Floor 0,אולם קומה 0,قاعة الطابق الأرضي,Location
+hall_floor_1,Hall Floor 1,אולם קומה 1,قاعة الطابق الأول,Location
+garden,Garden,גן,الحديقة,Location
+waterfall,Waterfall,מפל,الشلال,Location
+gender,Gender,מין,الجنس,Form Field
+men,Men,גברים,رجال,Gender
+women,Women,נשים,نساء,Gender
+mixed,Mixed,מעורב,مختلط,Gender
+guest_count,Guest Count,מספר אורחים,عدد الضيوف,Form Field
+base_price,Base Price,מחיר בסיס,السعر الأساسي,Form Field
+total_price,Total Price,מחיר כולל,السعر الإجمالي,Form Field
+payment_status,Payment Status,סטטוס תשלום,حالة الدفع,Form Field
+paid,Paid,שולם,مدفوع,Payment Status
+partially_paid,Partially Paid,שולם חלקית,مدفوع جزئيا,Payment Status
+not_paid,Not Paid,לא שולם,غير مدفوع,Payment Status
+decoration,Decoration,קישוט,ديكور,Service
+dj,DJ,די ג'יי,دي جي,Service
+cake,Cake,עוגה,كعكة,Service
+fruits,Fruits,פירות,فواكه,Service
+nuts,Nuts,אגוזים,مكسرات,Service
+notes,Notes,הערות,ملاحظات,Form Field
+save,Save,שמור,حفظ,Button
+cancel,Cancel,ביטול,إلغاء,Button
+edit,Edit,ערוך,تعديل,Button
+delete,Delete,מחק,حذف,Button
+add_new,Add New,הוסף חדש,إضافة جديد,Button
+profitability,Profitability,רווחיות,الربحية,Dashboard
+revenue,Revenue,הכנסות,الإيرادات,Dashboard
+expenses,Expenses,הוצאות,المصروفات,Dashboard
+outstanding_balance,Outstanding Balance,יתרת חוב,الرصيد المتبقي,Dashboard
+monthly_report,Monthly Report,דוח חודשי,التقرير الشهري,Report
+send_report,Send Report,שלח דוח,إرسال التقرير,Button
