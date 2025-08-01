@@ -1,0 +1,279 @@
+{
+  "monthly_report_automation": {
+    "name": "Al Ghadeer Events - Monthly Report",
+    "description": "Automatically generate and send monthly PDF reports via email and WhatsApp",
+    "trigger": {
+      "app": "Schedule by Zapier",
+      "event": "Every Month",
+      "schedule": "1st day of month at 9:00 AM"
+    },
+    "steps": [
+      {
+        "step": 1,
+        "app": "Google Sheets",
+        "action": "Lookup Spreadsheet Row",
+        "config": {
+          "spreadsheet": "Al Ghadeer Events Database",
+          "worksheet": "Events",
+          "lookup_column": "EventDate",
+          "lookup_value": "LAST_MONTH_RANGE"
+        }
+      },
+      {
+        "step": 2,
+        "app": "Google Sheets",
+        "action": "Lookup Spreadsheet Row",
+        "config": {
+          "spreadsheet": "Al Ghadeer Events Database",
+          "worksheet": "Payments",
+          "lookup_column": "PaymentDate",
+          "lookup_value": "LAST_MONTH_RANGE"
+        }
+      },
+      {
+        "step": 3,
+        "app": "Google Sheets",
+        "action": "Lookup Spreadsheet Row",
+        "config": {
+          "spreadsheet": "Al Ghadeer Events Database",
+          "worksheet": "EmployeesPayments",
+          "lookup_column": "PaymentDate",
+          "lookup_value": "LAST_MONTH_RANGE"
+        }
+      },
+      {
+        "step": 4,
+        "app": "Formatter by Zapier",
+        "action": "Numbers",
+        "config": {
+          "transform": "Sum",
+          "input": "{{steps.payments.amount}}"
+        }
+      },
+      {
+        "step": 5,
+        "app": "Formatter by Zapier",
+        "action": "Numbers",
+        "config": {
+          "transform": "Sum",
+          "input": "{{steps.employees.total_wage}}"
+        }
+      },
+      {
+        "step": 6,
+        "app": "PDF Generator",
+        "action": "Generate PDF",
+        "config": {
+          "template_url": "https://yourserver.com/monthly-report-template.html",
+          "data": {
+            "company_name": "Al Ghadeer Events",
+            "report_month": "{{zap_meta_human_now(MMMM YYYY)}}",
+            "total_revenue": "{{step_4.output}}",
+            "total_expenses": "{{step_5.output}}",
+            "net_profit": "{{step_4.output - step_5.output}}",
+            "events_data": "{{steps.events}}",
+            "payments_data": "{{steps.payments}}",
+            "employees_data": "{{steps.employees}}",
+            "logo_url": "https://yourserver.com/alghadeer-logo.png"
+          }
+        }
+      },
+      {
+        "step": 7,
+        "app": "Email by Zapier",
+        "action": "Send Outbound Email",
+        "config": {
+          "to": "alghadeerevents@gmail.com",
+          "subject": "דוח חודשי - {{zap_meta_human_now(MMMM YYYY)}} - Al Ghadeer Events",
+          "body": "שלום,\n\nבקובץ המצורף תמצאו את הדוח החודשי עבור {{zap_meta_human_now(MMMM YYYY)}}.\n\nסיכום חודשי:\n• הכנסות: {{step_4.output}} ש\"ח\n• הוצאות: {{step_5.output}} ש\"ח\n• רווח נקי: {{step_4.output - step_5.output}} ש\"ח\n\nבברכה,\nמערכת ניהול אירועי אל ע'דיר",
+          "attachments": "{{step_6.pdf_url}}"
+        }
+      },
+      {
+        "step": 8,
+        "app": "WhatsApp Business",
+        "action": "Send Message",
+        "config": {
+          "phone_number": "+970595781722",
+          "message": "📊 *דוח חודשי - {{zap_meta_human_now(MMMM YYYY)}}*\n\n💰 הכנסות: {{step_4.output}} ש\"ח\n💸 הוצאות: {{step_5.output}} ש\"ח\n📈 רווח נקי: {{step_4.output - step_5.output}} ש\"ח\n\n📎 הדוח המלא נשלח במייל",
+          "attachment": "{{step_6.pdf_url}}"
+        }
+      }
+    ]
+  },
+  "payment_reminder_automation": {
+    "name": "Al Ghadeer Events - Payment Reminders",
+    "description": "Send payment reminders for overdue balances",
+    "trigger": {
+      "app": "Schedule by Zapier",
+      "event": "Every Day",
+      "schedule": "10:00 AM"
+    },
+    "steps": [
+      {
+        "step": 1,
+        "app": "Google Sheets",
+        "action": "Lookup Spreadsheet Row",
+        "config": {
+          "spreadsheet": "Al Ghadeer Events Database",
+          "worksheet": "Events",
+          "lookup_column": "PaymentStatus",
+          "lookup_value": "Not Paid,Partially Paid"
+        }
+      },
+      {
+        "step": 2,
+        "app": "Filter by Zapier",
+        "condition": "Event Date is within 7 days OR Event Date has passed"
+      },
+      {
+        "step": 3,
+        "app": "Google Sheets",
+        "action": "Lookup Spreadsheet Row",
+        "config": {
+          "spreadsheet": "Al Ghadeer Events Database",
+          "worksheet": "Contacts",
+          "lookup_column": "EventID",
+          "lookup_value": "{{step_1.event_id}}"
+        }
+      },
+      {
+        "step": 4,
+        "app": "WhatsApp Business",
+        "action": "Send Message",
+        "config": {
+          "phone_number": "{{step_3.phone_number}}",
+          "message": "שלום {{step_3.contact_name}},\n\nזוהי תזכורת ידידותית בנוגע לתשלום עבור האירוע \"{{step_1.event_name}}\" שמתוכנן ל-{{step_1.event_date}}.\n\nסכום לתשלום: {{step_1.total_price - paid_amount}} ש\"ח\n\nאנא צרו קשר לתיאום התשלום.\n\nתודה,\nצוות אל ע'דיר\n📞 +970595781722"
+        }
+      }
+    ]
+  },
+  "reminder_notifications": {
+    "name": "Al Ghadeer Events - Task Reminders",
+    "description": "Send push notifications for due reminders and tasks",
+    "trigger": {
+      "app": "Schedule by Zapier",
+      "event": "Every Hour"
+    },
+    "steps": [
+      {
+        "step": 1,
+        "app": "Google Sheets",
+        "action": "Lookup Spreadsheet Row",
+        "config": {
+          "spreadsheet": "Al Ghadeer Events Database",
+          "worksheet": "Reminders",
+          "lookup_column": "ReminderDate",
+          "lookup_value": "TODAY()"
+        }
+      },
+      {
+        "step": 2,
+        "app": "Filter by Zapier",
+        "condition": "Status = Pending AND ReminderTime <= NOW()"
+      },
+      {
+        "step": 3,
+        "app": "Push by Zapier",
+        "action": "Send Push Notification",
+        "config": {
+          "title": "🔔 תזכורת: {{step_1.title}}",
+          "message": "{{step_1.description}}\n\nמוקצה ל: {{step_1.assigned_to}}",
+          "url": "https://alghadeer-events.glideapp.io/reminders/{{step_1.reminder_id}}"
+        }
+      },
+      {
+        "step": 4,
+        "app": "WhatsApp Business",
+        "action": "Send Message",
+        "config": {
+          "phone_number": "+970595781722",
+          "message": "🔔 *תזכורת*\n\n📋 {{step_1.title}}\n📝 {{step_1.description}}\n👤 מוקצה ל: {{step_1.assigned_to}}\n⏰ {{step_1.reminder_time}}"
+        }
+      }
+    ]
+  },
+  "new_event_notification": {
+    "name": "Al Ghadeer Events - New Event Added",
+    "description": "Notify team when new event is created",
+    "trigger": {
+      "app": "Google Sheets",
+      "event": "New Spreadsheet Row",
+      "config": {
+        "spreadsheet": "Al Ghadeer Events Database",
+        "worksheet": "Events"
+      }
+    },
+    "steps": [
+      {
+        "step": 1,
+        "app": "WhatsApp Business",
+        "action": "Send Message",
+        "config": {
+          "phone_number": "+970595781722",
+          "message": "🎉 *אירוע חדש נוסף למערכת*\n\n📅 {{trigger.event_name}}\n🏛️ סוג: {{trigger.event_type}}\n📍 מיקום: {{trigger.location}}\n📆 תאריך: {{trigger.event_date}}\n👥 אורחים: {{trigger.guest_count}}\n💰 מחיר: {{trigger.total_price}} ש\"ח"
+        }
+      }
+    ]
+  },
+  "manual_report_trigger": {
+    "name": "Al Ghadeer Events - Manual Report",
+    "description": "Generate report on demand from dashboard button",
+    "trigger": {
+      "app": "Webhooks by Zapier",
+      "event": "Catch Hook",
+      "webhook_url": "https://hooks.zapier.com/hooks/catch/12345/manual-report/"
+    },
+    "steps": [
+      {
+        "step": 1,
+        "app": "Google Sheets",
+        "action": "Lookup Spreadsheet Row",
+        "config": {
+          "spreadsheet": "Al Ghadeer Events Database",
+          "worksheet": "Events",
+          "lookup_column": "EventDate",
+          "lookup_value": "CURRENT_MONTH_RANGE"
+        }
+      },
+      {
+        "step": 2,
+        "app": "PDF Generator",
+        "action": "Generate PDF",
+        "config": {
+          "template_url": "https://yourserver.com/manual-report-template.html",
+          "data": {
+            "company_name": "Al Ghadeer Events",
+            "report_date": "{{zap_meta_human_now()}}",
+            "events_data": "{{step_1.output}}"
+          }
+        }
+      },
+      {
+        "step": 3,
+        "app": "Email by Zapier",
+        "action": "Send Outbound Email",
+        "config": {
+          "to": "alghadeerevents@gmail.com",
+          "subject": "דוח מיידי - Al Ghadeer Events - {{zap_meta_human_now()}}",
+          "attachments": "{{step_2.pdf_url}}"
+        }
+      }
+    ]
+  },
+  "webhook_endpoints": {
+    "monthly_report": "https://hooks.zapier.com/hooks/catch/12345/monthly-report/",
+    "payment_reminder": "https://hooks.zapier.com/hooks/catch/12345/payment-reminder/",
+    "task_reminder": "https://hooks.zapier.com/hooks/catch/12345/task-reminder/",
+    "manual_report": "https://hooks.zapier.com/hooks/catch/12345/manual-report/"
+  },
+  "setup_instructions": [
+    "1. Create a Zapier account at zapier.com",
+    "2. Connect your Google Sheets account",
+    "3. Connect WhatsApp Business API (or use alternative like Twilio)",
+    "4. Connect Email service (Gmail recommended)",
+    "5. Set up each automation by copying the configurations above",
+    "6. Test each automation before going live",
+    "7. Update webhook URLs in Glide app dashboard button"
+  ]
+}

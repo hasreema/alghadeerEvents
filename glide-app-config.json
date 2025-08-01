@@ -1,0 +1,671 @@
+{
+  "app_name": "Al Ghadeer Events",
+  "description": "Internal Event Management System for Hall Owners",
+  "theme": {
+    "primary_color": "#2E8B57",
+    "secondary_color": "#DAA520",
+    "background_color": "#F5F5F5",
+    "text_color": "#333333"
+  },
+  "navigation": {
+    "type": "tabs",
+    "tabs": [
+      {
+        "name": "Dashboard",
+        "icon": "dashboard",
+        "screen": "dashboard"
+      },
+      {
+        "name": "Events",
+        "icon": "event",
+        "screen": "events_list"
+      },
+      {
+        "name": "Payments",
+        "icon": "payment",
+        "screen": "payments_list"
+      },
+      {
+        "name": "Employees",
+        "icon": "people",
+        "screen": "employees_list"
+      },
+      {
+        "name": "Reminders",
+        "icon": "notification",
+        "screen": "reminders_list"
+      }
+    ]
+  },
+  "screens": {
+    "dashboard": {
+      "title": "Dashboard",
+      "components": [
+        {
+          "type": "title",
+          "text": "Al Ghadeer Events Dashboard",
+          "style": "large"
+        },
+        {
+          "type": "chart",
+          "chart_type": "gauge",
+          "title": "Profitability Meter",
+          "data_source": "calculated_profitability",
+          "color_ranges": [
+            {"min": 0, "max": 30, "color": "red"},
+            {"min": 30, "max": 60, "color": "yellow"},
+            {"min": 60, "max": 100, "color": "green"}
+          ]
+        },
+        {
+          "type": "chart",
+          "chart_type": "bar",
+          "title": "Revenue vs Expenses",
+          "data_source": "monthly_financials",
+          "x_axis": "month",
+          "y_axis": ["revenue", "expenses"]
+        },
+        {
+          "type": "chart",
+          "chart_type": "pie",
+          "title": "Profitability by Event Type",
+          "data_source": "events_profitability",
+          "category": "event_type",
+          "value": "profit"
+        },
+        {
+          "type": "list",
+          "title": "Upcoming Events",
+          "data_source": "Events",
+          "filter": "EventDate >= TODAY()",
+          "sort": "EventDate ASC",
+          "limit": 5,
+          "layout": "card",
+          "fields": ["EventName", "EventDate", "Location", "PaymentStatus"]
+        },
+        {
+          "type": "list",
+          "title": "Outstanding Balances",
+          "data_source": "Events",
+          "filter": "PaymentStatus != 'Paid'",
+          "layout": "list",
+          "fields": ["EventName", "TotalPrice", "PaymentStatus"],
+          "alert_style": "warning"
+        },
+        {
+          "type": "button",
+          "text": "Send Monthly Report Now",
+          "action": "webhook",
+          "webhook_url": "https://hooks.zapier.com/hooks/catch/monthly-report/",
+          "style": "primary"
+        }
+      ]
+    },
+    "events_list": {
+      "title": "Events Management",
+      "data_source": "Events",
+      "layout": "list",
+      "components": [
+        {
+          "type": "add_button",
+          "text": "Add New Event",
+          "target_screen": "event_form"
+        },
+        {
+          "type": "search_bar",
+          "placeholder": "Search events..."
+        },
+        {
+          "type": "filter",
+          "field": "EventType",
+          "options": ["All", "Wedding", "Henna", "Engagement", "Graduation", "Other"]
+        },
+        {
+          "type": "list_item",
+          "fields": [
+            {"field": "EventName", "style": "title"},
+            {"field": "EventType", "style": "subtitle"},
+            {"field": "EventDate", "style": "detail"},
+            {"field": "Location", "style": "detail"},
+            {"field": "PaymentStatus", "style": "badge"}
+          ],
+          "actions": [
+            {"type": "edit", "target_screen": "event_form"},
+            {"type": "view", "target_screen": "event_detail"}
+          ]
+        }
+      ]
+    },
+    "event_form": {
+      "title": "Event Details",
+      "data_source": "Events",
+      "type": "form",
+      "fields": [
+        {
+          "name": "EventName",
+          "type": "text",
+          "label": "Event Name",
+          "required": true,
+          "placeholder": "Enter event name"
+        },
+        {
+          "name": "EventType",
+          "type": "choice",
+          "label": "Event Type",
+          "required": true,
+          "options": ["Wedding", "Henna", "Engagement", "Graduation", "Other"],
+          "conditional": {
+            "if": "Other",
+            "show": "CustomEventType"
+          }
+        },
+        {
+          "name": "CustomEventType",
+          "type": "text",
+          "label": "Custom Event Type",
+          "placeholder": "Specify custom event type"
+        },
+        {
+          "name": "EventDate",
+          "type": "date",
+          "label": "Event Date",
+          "required": true
+        },
+        {
+          "name": "EventTime",
+          "type": "time",
+          "label": "Event Time",
+          "required": true
+        },
+        {
+          "name": "Location",
+          "type": "choice",
+          "label": "Location",
+          "required": true,
+          "options": ["Hall Floor 0", "Hall Floor 1", "Garden", "Waterfall"]
+        },
+        {
+          "name": "Gender",
+          "type": "choice",
+          "label": "Gender",
+          "options": ["Men", "Women", "Mixed"]
+        },
+        {
+          "name": "GuestCount",
+          "type": "number",
+          "label": "Guest Count",
+          "placeholder": "Number of guests"
+        },
+        {
+          "name": "BasePrice",
+          "type": "number",
+          "label": "Base Price (₪)",
+          "required": true,
+          "format": "currency"
+        },
+        {
+          "type": "section_header",
+          "text": "Additional Services"
+        },
+        {
+          "name": "DJ",
+          "type": "checkbox",
+          "label": "DJ Service",
+          "conditional_fields": [
+            {
+              "name": "DJCost",
+              "type": "number",
+              "label": "DJ Cost (₪)",
+              "format": "currency"
+            },
+            {
+              "name": "DJProvider",
+              "type": "choice",
+              "label": "DJ Provider",
+              "options": ["Hall", "Client"]
+            }
+          ]
+        },
+        {
+          "name": "Cake",
+          "type": "checkbox",
+          "label": "Cake",
+          "conditional_fields": [
+            {
+              "name": "CakeQuantity",
+              "type": "number",
+              "label": "Cake Quantity"
+            },
+            {
+              "name": "CakeCost",
+              "type": "number",
+              "label": "Cake Cost (₪)",
+              "format": "currency"
+            },
+            {
+              "name": "CakeProvider",
+              "type": "choice",
+              "label": "Cake Provider",
+              "options": ["Hall", "Client"]
+            }
+          ]
+        },
+        {
+          "name": "Fruits",
+          "type": "checkbox",
+          "label": "Fruits",
+          "conditional_fields": [
+            {
+              "name": "FruitsCost",
+              "type": "number",
+              "label": "Fruits Cost (₪)",
+              "format": "currency"
+            },
+            {
+              "name": "FruitsProvider",
+              "type": "choice",
+              "label": "Fruits Provider",
+              "options": ["Hall", "Client"]
+            }
+          ]
+        },
+        {
+          "name": "Nuts",
+          "type": "checkbox",
+          "label": "Nuts",
+          "conditional_fields": [
+            {
+              "name": "NutsCost",
+              "type": "number",
+              "label": "Nuts Cost (₪)",
+              "format": "currency"
+            },
+            {
+              "name": "NutsProvider",
+              "type": "choice",
+              "label": "Nuts Provider",
+              "options": ["Hall", "Client"]
+            }
+          ]
+        },
+        {
+          "name": "CustomRequest1",
+          "type": "text",
+          "label": "Custom Request 1",
+          "placeholder": "Enter custom request"
+        },
+        {
+          "name": "CustomRequest1Cost",
+          "type": "number",
+          "label": "Custom Request 1 Cost (₪)",
+          "format": "currency"
+        },
+        {
+          "name": "CustomRequest1Provider",
+          "type": "choice",
+          "label": "Custom Request 1 Provider",
+          "options": ["Hall", "Client"]
+        },
+        {
+          "type": "section_header",
+          "text": "Decoration"
+        },
+        {
+          "name": "Decoration",
+          "type": "choice",
+          "label": "Decoration Type",
+          "options": ["Standard", "Customized"],
+          "conditional": {
+            "if": "Customized",
+            "show": "DecorationDescription"
+          }
+        },
+        {
+          "name": "DecorationDescription",
+          "type": "text_area",
+          "label": "Decoration Description",
+          "placeholder": "Describe custom decoration requirements"
+        },
+        {
+          "name": "DecorationCost",
+          "type": "number",
+          "label": "Decoration Cost (₪)",
+          "format": "currency"
+        },
+        {
+          "name": "Notes",
+          "type": "text_area",
+          "label": "Notes",
+          "placeholder": "Additional notes about the event"
+        }
+      ],
+      "calculated_fields": [
+        {
+          "name": "TotalPrice",
+          "formula": "BasePrice + DJCost + CakeCost + FruitsCost + NutsCost + CustomRequest1Cost + CustomRequest2Cost + DecorationCost"
+        }
+      ],
+      "actions": [
+        {
+          "type": "save",
+          "text": "Save Event"
+        },
+        {
+          "type": "cancel",
+          "text": "Cancel"
+        }
+      ]
+    },
+    "payments_list": {
+      "title": "Payments Management",
+      "data_source": "Payments",
+      "components": [
+        {
+          "type": "add_button",
+          "text": "Add Payment",
+          "target_screen": "payment_form"
+        },
+        {
+          "type": "summary_cards",
+          "cards": [
+            {
+              "title": "Total Received",
+              "value": "SUM(Amount)",
+              "format": "currency"
+            },
+            {
+              "title": "Outstanding Balance",
+              "value": "SUM(Events.TotalPrice) - SUM(Amount)",
+              "format": "currency"
+            }
+          ]
+        },
+        {
+          "type": "list_item",
+          "fields": [
+            {"field": "EventName", "style": "title", "source": "Events"},
+            {"field": "Amount", "style": "subtitle", "format": "currency"},
+            {"field": "PaymentDate", "style": "detail"},
+            {"field": "PaymentMethod", "style": "detail"},
+            {"field": "PaymentType", "style": "badge"}
+          ],
+          "actions": [
+            {"type": "edit", "target_screen": "payment_form"},
+            {"type": "view_receipt", "field": "ReceiptImage"}
+          ]
+        }
+      ]
+    },
+    "payment_form": {
+      "title": "Payment Details",
+      "data_source": "Payments",
+      "type": "form",
+      "fields": [
+        {
+          "name": "EventID",
+          "type": "relation",
+          "label": "Event",
+          "required": true,
+          "data_source": "Events",
+          "display_field": "EventName"
+        },
+        {
+          "name": "PaymentDate",
+          "type": "date",
+          "label": "Payment Date",
+          "required": true,
+          "default": "TODAY()"
+        },
+        {
+          "name": "Amount",
+          "type": "number",
+          "label": "Amount (₪)",
+          "required": true,
+          "format": "currency"
+        },
+        {
+          "name": "PaymentMethod",
+          "type": "choice",
+          "label": "Payment Method",
+          "options": ["Cash", "Bank Transfer", "Credit Card", "Check"]
+        },
+        {
+          "name": "PaymentType",
+          "type": "choice",
+          "label": "Payment Type",
+          "options": ["Full", "Partial", "Deposit"]
+        },
+        {
+          "name": "ReceiptImage",
+          "type": "image_picker",
+          "label": "Receipt",
+          "allow_multiple": false
+        },
+        {
+          "name": "Notes",
+          "type": "text_area",
+          "label": "Notes"
+        }
+      ]
+    },
+    "employees_list": {
+      "title": "Employee Management",
+      "data_source": "EmployeesPayments",
+      "components": [
+        {
+          "type": "add_button",
+          "text": "Add Employee Payment",
+          "target_screen": "employee_form"
+        },
+        {
+          "type": "summary_cards",
+          "cards": [
+            {
+              "title": "Total Wages",
+              "value": "SUM(TotalWage)",
+              "format": "currency"
+            },
+            {
+              "title": "Pending Payments",
+              "value": "SUMIF(PaymentStatus, 'Pending', TotalWage)",
+              "format": "currency"
+            }
+          ]
+        },
+        {
+          "type": "list_item",
+          "fields": [
+            {"field": "EmployeeName", "style": "title"},
+            {"field": "Role", "style": "subtitle"},
+            {"field": "TotalWage", "style": "detail", "format": "currency"},
+            {"field": "PaymentStatus", "style": "badge"},
+            {"field": "EventName", "style": "detail", "source": "Events"}
+          ]
+        }
+      ]
+    },
+    "employee_form": {
+      "title": "Employee Payment",
+      "data_source": "EmployeesPayments",
+      "type": "form",
+      "fields": [
+        {
+          "name": "EventID",
+          "type": "relation",
+          "label": "Event",
+          "required": true,
+          "data_source": "Events",
+          "display_field": "EventName"
+        },
+        {
+          "name": "EmployeeName",
+          "type": "text",
+          "label": "Employee Name",
+          "required": true
+        },
+        {
+          "name": "Role",
+          "type": "choice",
+          "label": "Role",
+          "options": ["Waiter", "Kitchen Staff", "Security", "Coordinator", "Setup Crew", "Cleaning", "DJ", "Other"]
+        },
+        {
+          "name": "WagePerHour",
+          "type": "number",
+          "label": "Wage per Hour (₪)",
+          "required": true,
+          "format": "currency"
+        },
+        {
+          "name": "HoursWorked",
+          "type": "number",
+          "label": "Hours Worked",
+          "required": true
+        },
+        {
+          "name": "PaymentDate",
+          "type": "date",
+          "label": "Payment Date"
+        },
+        {
+          "name": "PaymentStatus",
+          "type": "choice",
+          "label": "Payment Status",
+          "options": ["Paid", "Pending"],
+          "default": "Pending"
+        },
+        {
+          "name": "Notes",
+          "type": "text_area",
+          "label": "Notes"
+        }
+      ],
+      "calculated_fields": [
+        {
+          "name": "TotalWage",
+          "formula": "WagePerHour * HoursWorked"
+        }
+      ]
+    },
+    "reminders_list": {
+      "title": "Reminders & Tasks",
+      "data_source": "Reminders",
+      "components": [
+        {
+          "type": "add_button",
+          "text": "Add Reminder",
+          "target_screen": "reminder_form"
+        },
+        {
+          "type": "filter",
+          "field": "Status",
+          "options": ["All", "Pending", "Completed", "Overdue"]
+        },
+        {
+          "type": "list_item",
+          "fields": [
+            {"field": "Title", "style": "title"},
+            {"field": "Description", "style": "subtitle"},
+            {"field": "ReminderDate", "style": "detail"},
+            {"field": "AssignedTo", "style": "detail"},
+            {"field": "Status", "style": "badge"}
+          ],
+          "actions": [
+            {"type": "mark_complete"},
+            {"type": "edit", "target_screen": "reminder_form"}
+          ]
+        }
+      ]
+    },
+    "reminder_form": {
+      "title": "Reminder Details",
+      "data_source": "Reminders",
+      "type": "form",
+      "fields": [
+        {
+          "name": "Title",
+          "type": "text",
+          "label": "Reminder Title",
+          "required": true
+        },
+        {
+          "name": "Description",
+          "type": "text_area",
+          "label": "Description"
+        },
+        {
+          "name": "RelatedEventID",
+          "type": "relation",
+          "label": "Related Event",
+          "data_source": "Events",
+          "display_field": "EventName"
+        },
+        {
+          "name": "ReminderDate",
+          "type": "date",
+          "label": "Reminder Date",
+          "required": true
+        },
+        {
+          "name": "ReminderTime",
+          "type": "time",
+          "label": "Reminder Time"
+        },
+        {
+          "name": "AssignedTo",
+          "type": "text",
+          "label": "Assigned To"
+        },
+        {
+          "name": "ReminderType",
+          "type": "choice",
+          "label": "Type",
+          "options": ["Pre-Event", "Post-Event", "Payment", "Maintenance", "General"]
+        },
+        {
+          "name": "IsRecurring",
+          "type": "checkbox",
+          "label": "Recurring Reminder",
+          "conditional_fields": [
+            {
+              "name": "RecurrencePattern",
+              "type": "choice",
+              "label": "Recurrence",
+              "options": ["Daily", "Weekly", "Monthly", "Yearly"]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "automations": {
+    "payment_status_update": {
+      "trigger": "on_form_submit",
+      "form": "payment_form",
+      "action": "update_related_record",
+      "target_sheet": "Events",
+      "update_field": "PaymentStatus",
+      "logic": "IF(SUM(Payments.Amount) >= Events.TotalPrice, 'Paid', IF(SUM(Payments.Amount) > 0, 'Partially Paid', 'Not Paid'))"
+    },
+    "total_expenses_calculation": {
+      "trigger": "on_form_submit",
+      "forms": ["employee_form", "event_form"],
+      "action": "calculate_field",
+      "target_field": "TotalExpenses",
+      "formula": "SUM(EmployeesPayments.TotalWage) + DJCost + CakeCost + FruitsCost + NutsCost + CustomRequest1Cost + CustomRequest2Cost + DecorationCost"
+    },
+    "reminder_notifications": {
+      "trigger": "scheduled",
+      "frequency": "every_hour",
+      "action": "webhook",
+      "webhook_url": "https://hooks.zapier.com/hooks/catch/reminder-check/",
+      "data": "reminders_due_today"
+    }
+  },
+  "language_settings": {
+    "default_language": "English",
+    "supported_languages": ["English", "Hebrew", "Arabic"],
+    "translation_source": "Languages",
+    "rtl_languages": ["Hebrew", "Arabic"]
+  }
+}
