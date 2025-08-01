@@ -1,0 +1,243 @@
+{
+  "workflows": [
+    {
+      "name": "Monthly Report Automation",
+      "description": "Generate and send monthly PDF reports in Hebrew via email and WhatsApp",
+      "trigger": {
+        "type": "schedule",
+        "schedule": "monthly",
+        "day": 1,
+        "time": "09:00"
+      },
+      "steps": [
+        {
+          "action": "google_sheets_lookup",
+          "params": {
+            "spreadsheet_id": "YOUR_GOOGLE_SHEETS_ID",
+            "worksheet": "Events",
+            "search_column": "EventDate",
+            "search_value": "LAST_MONTH"
+          }
+        },
+        {
+          "action": "google_sheets_lookup",
+          "params": {
+            "spreadsheet_id": "YOUR_GOOGLE_SHEETS_ID",
+            "worksheet": "Payments",
+            "search_column": "PaymentDate",
+            "search_value": "LAST_MONTH"
+          }
+        },
+        {
+          "action": "google_sheets_lookup",
+          "params": {
+            "spreadsheet_id": "YOUR_GOOGLE_SHEETS_ID",
+            "worksheet": "EmployeesPayments",
+            "search_column": "PaymentDate",
+            "search_value": "LAST_MONTH"
+          }
+        },
+        {
+          "action": "pdf_generator",
+          "params": {
+            "template": "monthly_report_hebrew.html",
+            "data": {
+              "company_name": "AlghadeerEvents",
+              "report_month": "{{current_month}}",
+              "events": "{{step1_output}}",
+              "payments": "{{step2_output}}",
+              "employees": "{{step3_output}}",
+              "total_revenue": "{{calculated_revenue}}",
+              "total_expenses": "{{calculated_expenses}}",
+              "net_profit": "{{calculated_profit}}",
+              "logo_url": "assets/logo.png"
+            },
+            "language": "hebrew",
+            "filename": "تقرير شهري - {{current_month}}.pdf"
+          }
+        },
+        {
+          "action": "email_send",
+          "params": {
+            "to": "alghadeerevents@gmail.com",
+            "subject": "التقرير الشهري - {{current_month}}",
+            "body": "مرفق التقرير الشهري لفعاليات الغدير. يرجى مراجعة الأرقام والتأكد من دقة البيانات.",
+            "attachment": "{{step4_pdf_output}}",
+            "language": "arabic"
+          }
+        },
+        {
+          "action": "whatsapp_send",
+          "params": {
+            "to": "+970595781722",
+            "message": "تم إرسال التقرير الشهري لـ {{current_month}}. الأرباح الصافية: {{net_profit}} شيكل",
+            "attachment": "{{step4_pdf_output}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payment Reminder Automation",
+      "description": "Send payment reminders for overdue balances",
+      "trigger": {
+        "type": "schedule",
+        "schedule": "daily",
+        "time": "10:00"
+      },
+      "steps": [
+        {
+          "action": "google_sheets_lookup",
+          "params": {
+            "spreadsheet_id": "YOUR_GOOGLE_SHEETS_ID",
+            "worksheet": "Payments",
+            "filter": "OutstandingBalance > 0 AND EventDate < TODAY() - 7"
+          }
+        },
+        {
+          "action": "email_send",
+          "params": {
+            "to": "alghadeerevents@gmail.com",
+            "subject": "تذكير - مدفوعات متأخرة",
+            "body": "هناك {{count}} عميل لديهم مدفوعات متأخرة. يرجى المتابعة معهم.",
+            "condition": "{{step1_count}} > 0"
+          }
+        },
+        {
+          "action": "whatsapp_send",
+          "params": {
+            "to": "+970595781722",
+            "message": "تذكير: هناك {{count}} مدفوعات متأخرة بقيمة {{total_outstanding}} شيكل",
+            "condition": "{{step1_count}} > 0"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Event Reminder Notifications",
+      "description": "Send reminders for upcoming events and tasks",
+      "trigger": {
+        "type": "webhook",
+        "url": "https://hooks.zapier.com/hooks/catch/YOUR_WEBHOOK_ID/"
+      },
+      "steps": [
+        {
+          "action": "google_sheets_lookup",
+          "params": {
+            "spreadsheet_id": "YOUR_GOOGLE_SHEETS_ID",
+            "worksheet": "Reminders",
+            "filter": "ReminderDate = TODAY() AND Status = 'Pending'"
+          }
+        },
+        {
+          "action": "push_notification",
+          "params": {
+            "title": "{{reminder_title}}",
+            "message": "{{reminder_description}}",
+            "priority": "{{reminder_priority}}",
+            "assignee": "{{reminder_assignee}}"
+          }
+        },
+        {
+          "action": "whatsapp_send",
+          "params": {
+            "to": "+970595781722",
+            "message": "تذكير: {{reminder_title}} - {{reminder_description}}",
+            "condition": "{{reminder_priority}} == 'High'"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Manual Report Generation",
+      "description": "Generate report on demand from dashboard button",
+      "trigger": {
+        "type": "webhook",
+        "url": "https://hooks.zapier.com/hooks/catch/YOUR_MANUAL_REPORT_WEBHOOK/"
+      },
+      "steps": [
+        {
+          "action": "google_sheets_lookup",
+          "params": {
+            "spreadsheet_id": "YOUR_GOOGLE_SHEETS_ID",
+            "worksheet": "Events",
+            "filter": "ALL_CURRENT_MONTH"
+          }
+        },
+        {
+          "action": "pdf_generator",
+          "params": {
+            "template": "monthly_report_hebrew.html",
+            "data": {
+              "company_name": "AlghadeerEvents",
+              "report_type": "Manual Report",
+              "generation_date": "{{current_date}}",
+              "events": "{{step1_output}}",
+              "logo_url": "assets/logo.png"
+            },
+            "filename": "تقرير يدوي - {{current_date}}.pdf"
+          }
+        },
+        {
+          "action": "email_send",
+          "params": {
+            "to": "alghadeerevents@gmail.com",
+            "subject": "التقرير اليدوي - {{current_date}}",
+            "body": "تم إنتاج التقرير بناءً على طلبك.",
+            "attachment": "{{step2_pdf_output}}"
+          }
+        },
+        {
+          "action": "whatsapp_send",
+          "params": {
+            "to": "+970595781722",
+            "message": "تم إرسال التقرير اليدوي بتاريخ {{current_date}}",
+            "attachment": "{{step2_pdf_output}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "New Event Notification",
+      "description": "Notify team when new event is created",
+      "trigger": {
+        "type": "google_sheets_new_row",
+        "spreadsheet_id": "YOUR_GOOGLE_SHEETS_ID",
+        "worksheet": "Events"
+      },
+      "steps": [
+        {
+          "action": "whatsapp_send",
+          "params": {
+            "to": "+970595781722",
+            "message": "حدث جديد: {{event_name}} في {{event_date}} - {{location}}"
+          }
+        },
+        {
+          "action": "email_send",
+          "params": {
+            "to": "alghadeerevents@gmail.com",
+            "subject": "حدث جديد مُضاف: {{event_name}}",
+            "body": "تم إضافة حدث جديد:\n\nاسم الحدث: {{event_name}}\nالنوع: {{event_type}}\nالتاريخ: {{event_date}}\nالموقع: {{location}}\nعدد الضيوف: {{guest_count}}\nالسعر الإجمالي: {{total_price}} شيكل"
+          }
+        }
+      ]
+    }
+  ],
+  "templates": {
+    "monthly_report_hebrew": {
+      "file": "templates/monthly_report_hebrew.html",
+      "description": "Hebrew PDF report template with company branding"
+    }
+  },
+  "settings": {
+    "timezone": "Asia/Jerusalem",
+    "currency": "ILS",
+    "default_language": "arabic",
+    "company_info": {
+      "name": "AlghadeerEvents",
+      "email": "alghadeerevents@gmail.com",
+      "whatsapp": "+970595781722",
+      "logo": "assets/logo.png"
+    }
+  }
+}

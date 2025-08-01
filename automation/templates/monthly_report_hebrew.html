@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>דוח חודשי - {{company_name}}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Heebo', Arial, sans-serif;
+            direction: rtl;
+            text-align: right;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #C9B037, #FFD700);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            border: 3px solid white;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .company-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .report-title {
+            font-size: 20px;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+        
+        .report-date {
+            font-size: 16px;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+        
+        .decorative-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 2px, transparent 2px),
+                radial-gradient(circle at 80% 50%, rgba(255,255,255,0.1) 2px, transparent 2px);
+            background-size: 30px 30px;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #C9B037, #FFD700);
+        }
+        
+        .card-title {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .card-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #C9B037;
+            margin-bottom: 5px;
+        }
+        
+        .card-currency {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #C9B037;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #C9B037;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            right: 0;
+            width: 50px;
+            height: 2px;
+            background: #FFD700;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .table th {
+            background: linear-gradient(135deg, #C9B037, #FFD700);
+            color: white;
+            padding: 15px 12px;
+            font-weight: 600;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .table td {
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+            text-align: center;
+            font-size: 13px;
+        }
+        
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .status-paid {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            color: #ffc107;
+            font-weight: 600;
+        }
+        
+        .status-overdue {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .chart-placeholder {
+            height: 200px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 2px dashed #C9B037;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 16px;
+            margin: 20px 0;
+        }
+        
+        .footer {
+            background: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            border-top: 3px solid #C9B037;
+        }
+        
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: #6c757d;
+        }
+        
+        .contact-icon {
+            width: 20px;
+            height: 20px;
+            background: #C9B037;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+        
+        .generated-date {
+            color: #6c757d;
+            font-size: 12px;
+            margin-top: 15px;
+        }
+        
+        @media print {
+            body { margin: 0; }
+            .container { box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="decorative-pattern"></div>
+            <div class="logo">
+                <img src="{{logo_url}}" alt="לוגו" style="width: 60px; height: 60px; border-radius: 50%;">
+            </div>
+            <h1 class="company-name">{{company_name}}</h1>
+            <h2 class="report-title">דוח חודשי</h2>
+            <div class="report-date">{{report_month}} {{current_year}}</div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="card-title">סך הכנסות</div>
+                    <div class="card-value">{{total_revenue}}</div>
+                    <div class="card-currency">₪</div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-title">סך הוצאות</div>
+                    <div class="card-value">{{total_expenses}}</div>
+                    <div class="card-currency">₪</div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-title">רווח נקי</div>
+                    <div class="card-value">{{net_profit}}</div>
+                    <div class="card-currency">₪</div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-title">מספר אירועים</div>
+                    <div class="card-value">{{total_events}}</div>
+                    <div class="card-currency">אירועים</div>
+                </div>
+            </div>
+
+            <!-- Events Section -->
+            <div class="section">
+                <h3 class="section-title">אירועים בחודש</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>שם האירוע</th>
+                            <th>סוג</th>
+                            <th>תאריך</th>
+                            <th>מיקום</th>
+                            <th>אורחים</th>
+                            <th>מחיר</th>
+                            <th>סטטוס תשלום</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each events}}
+                        <tr>
+                            <td>{{EventName}}</td>
+                            <td>{{EventType}}</td>
+                            <td>{{EventDate}}</td>
+                            <td>{{Location}}</td>
+                            <td>{{GuestCount}}</td>
+                            <td>₪{{TotalPrice}}</td>
+                            <td class="status-{{PaymentStatus}}">{{PaymentStatus}}</td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Payments Section -->
+            <div class="section">
+                <h3 class="section-title">תשלומים</h3>
+                <div class="chart-placeholder">
+                    גרף תשלומים - רווח לעומת הוצאות
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>אירוע</th>
+                            <th>סכום שולם</th>
+                            <th>יתרה</th>
+                            <th>תאריך תשלום</th>
+                            <th>אמצעי תשלום</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each payments}}
+                        <tr>
+                            <td>{{EventName}}</td>
+                            <td>₪{{AmountPaid}}</td>
+                            <td>₪{{OutstandingBalance}}</td>
+                            <td>{{PaymentDate}}</td>
+                            <td>{{PaymentMethod}}</td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Employees Section -->
+            <div class="section">
+                <h3 class="section-title">עובדים ושכר</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>שם עובד</th>
+                            <th>תפקיד</th>
+                            <th>שעות עבודה</th>
+                            <th>שכר לשעה</th>
+                            <th>סך שכר</th>
+                            <th>סטטוס תשלום</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each employees}}
+                        <tr>
+                            <td>{{EmployeeName}}</td>
+                            <td>{{Role}}</td>
+                            <td>{{HoursWorked}}</td>
+                            <td>₪{{WagePerHour}}</td>
+                            <td>₪{{TotalWage}}</td>
+                            <td class="status-{{PaymentStatus}}">{{PaymentStatus}}</td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Analytics Section -->
+            <div class="section">
+                <h3 class="section-title">ניתוח נתונים</h3>
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <div class="card-title">רווחיות (%)</div>
+                        <div class="card-value">{{profitability_percentage}}%</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="card-title">ממוצע מחיר לאירוע</div>
+                        <div class="card-value">{{average_event_price}}</div>
+                        <div class="card-currency">₪</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="card-title">ממוצע אורחים</div>
+                        <div class="card-value">{{average_guests}}</div>
+                    </div>
+                </div>
+                
+                <div class="chart-placeholder">
+                    גרף רווחיות לפי סוג אירוע
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="contact-info">
+                <div class="contact-item">
+                    <div class="contact-icon">📧</div>
+                    <span>alghadeerevents@gmail.com</span>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">📱</div>
+                    <span>+970595781722</span>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">🏢</div>
+                    <span>قاعات الغدير للمناسبات</span>
+                </div>
+            </div>
+            <div class="generated-date">
+                נוצר בתאריך: {{generation_date}} | מערכת ניהול אירועים AlghadeerEvents
+            </div>
+        </div>
+    </div>
+</body>
+</html>

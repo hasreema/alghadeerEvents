@@ -1,0 +1,476 @@
+{
+  "app": {
+    "name": "AlghadeerEvents Management",
+    "theme": {
+      "primaryColor": "#C9B037",
+      "secondaryColor": "#FFD700",
+      "backgroundColor": "#FFFFFF",
+      "accentColor": "#8B7355"
+    },
+    "icon": "assets/logo.png",
+    "navigation": "tabs",
+    "defaultLanguage": "en"
+  },
+  "dataSource": {
+    "type": "googleSheets",
+    "spreadsheetId": "YOUR_GOOGLE_SHEETS_ID",
+    "sheets": [
+      {
+        "name": "Events",
+        "range": "A:AH",
+        "headers": true
+      },
+      {
+        "name": "Payments",
+        "range": "A:K",
+        "headers": true
+      },
+      {
+        "name": "EmployeesPayments",
+        "range": "A:K",
+        "headers": true
+      },
+      {
+        "name": "PriceList",
+        "range": "A:K",
+        "headers": true
+      },
+      {
+        "name": "Reminders",
+        "range": "A:N",
+        "headers": true
+      },
+      {
+        "name": "Contacts",
+        "range": "A:L",
+        "headers": true
+      },
+      {
+        "name": "Tasks",
+        "range": "A:L",
+        "headers": true
+      },
+      {
+        "name": "Languages",
+        "range": "A:E",
+        "headers": true
+      }
+    ]
+  },
+  "screens": [
+    {
+      "id": "dashboard",
+      "name": "Dashboard",
+      "icon": "dashboard",
+      "type": "dashboard",
+      "components": [
+        {
+          "type": "chart",
+          "title": "Profitability Meter",
+          "chartType": "gauge",
+          "dataSource": "Events",
+          "calculation": "profit_percentage"
+        },
+        {
+          "type": "chart",
+          "title": "Revenue vs Expenses",
+          "chartType": "bar",
+          "dataSource": "Events",
+          "xAxis": "EventDate",
+          "yAxis": ["TotalPrice", "TotalExpenses"]
+        },
+        {
+          "type": "cards",
+          "title": "Upcoming Events",
+          "dataSource": "Events",
+          "filter": "EventDate >= TODAY()",
+          "limit": 5
+        },
+        {
+          "type": "cards",
+          "title": "Outstanding Payments",
+          "dataSource": "Payments",
+          "filter": "OutstandingBalance > 0",
+          "limit": 10
+        },
+        {
+          "type": "button",
+          "title": "Send Monthly Report",
+          "action": "webhook",
+          "webhook": "zapier_monthly_report"
+        }
+      ]
+    },
+    {
+      "id": "events",
+      "name": "Events",
+      "icon": "calendar",
+      "type": "list",
+      "dataSource": "Events",
+      "components": [
+        {
+          "type": "form",
+          "action": "add",
+          "fields": [
+            {
+              "name": "EventName",
+              "type": "text",
+              "required": true,
+              "label": "event_name"
+            },
+            {
+              "name": "EventType",
+              "type": "choice",
+              "options": ["Wedding", "Henna", "Engagement", "Graduation", "Other"],
+              "allowOther": true,
+              "required": true,
+              "label": "event_type"
+            },
+            {
+              "name": "EventDate",
+              "type": "date",
+              "required": true,
+              "label": "event_date"
+            },
+            {
+              "name": "StartTime",
+              "type": "time",
+              "required": true,
+              "label": "start_time"
+            },
+            {
+              "name": "EndTime",
+              "type": "time",
+              "required": true,
+              "label": "end_time"
+            },
+            {
+              "name": "Location",
+              "type": "choice",
+              "options": ["Hall Floor 0", "Hall Floor 1", "Garden", "Waterfall"],
+              "required": true,
+              "label": "location"
+            },
+            {
+              "name": "Gender",
+              "type": "choice",
+              "options": ["Men", "Women", "Mixed"],
+              "required": true,
+              "label": "gender"
+            },
+            {
+              "name": "GuestCount",
+              "type": "number",
+              "required": true,
+              "label": "guest_count"
+            },
+            {
+              "name": "BasePrice",
+              "type": "number",
+              "currency": "ILS",
+              "calculated": true,
+              "label": "base_price"
+            },
+            {
+              "name": "DJ",
+              "type": "checkbox",
+              "label": "dj"
+            },
+            {
+              "name": "DJCost",
+              "type": "number",
+              "currency": "ILS",
+              "conditional": "DJ == true",
+              "label": "dj_cost"
+            },
+            {
+              "name": "Cake",
+              "type": "checkbox",
+              "label": "cake"
+            },
+            {
+              "name": "CakeQuantity",
+              "type": "number",
+              "conditional": "Cake == true",
+              "label": "cake_quantity"
+            },
+            {
+              "name": "Fruits",
+              "type": "checkbox",
+              "label": "fruits"
+            },
+            {
+              "name": "Nuts",
+              "type": "checkbox",
+              "label": "nuts"
+            },
+            {
+              "name": "DecorationStandard",
+              "type": "checkbox",
+              "label": "standard_decoration"
+            },
+            {
+              "name": "DecorationCustom",
+              "type": "text",
+              "conditional": "DecorationStandard == false",
+              "label": "custom_decoration"
+            },
+            {
+              "name": "Notes",
+              "type": "textarea",
+              "label": "notes"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "payments",
+      "name": "Payments",
+      "icon": "payment",
+      "type": "list",
+      "dataSource": "Payments",
+      "components": [
+        {
+          "type": "form",
+          "action": "add",
+          "fields": [
+            {
+              "name": "EventID",
+              "type": "relation",
+              "relatedTable": "Events",
+              "displayField": "EventName",
+              "required": true
+            },
+            {
+              "name": "PaymentDate",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "AmountPaid",
+              "type": "number",
+              "currency": "ILS",
+              "required": true
+            },
+            {
+              "name": "PaymentMethod",
+              "type": "choice",
+              "options": ["Cash", "Bank Transfer", "Credit Card", "Check"]
+            },
+            {
+              "name": "ReceiptURL",
+              "type": "file",
+              "accepts": ["image/*", "application/pdf"]
+            },
+            {
+              "name": "Notes",
+              "type": "textarea"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "employees",
+      "name": "Employees",
+      "icon": "people",
+      "type": "list",
+      "dataSource": "EmployeesPayments",
+      "components": [
+        {
+          "type": "form",
+          "action": "add",
+          "fields": [
+            {
+              "name": "EventID",
+              "type": "relation",
+              "relatedTable": "Events",
+              "displayField": "EventName",
+              "required": true
+            },
+            {
+              "name": "EmployeeName",
+              "type": "text",
+              "required": true
+            },
+            {
+              "name": "Role",
+              "type": "choice",
+              "options": ["Waiter", "Chef", "Security", "Cleaner", "DJ", "Manager", "Other"],
+              "allowOther": true,
+              "required": true
+            },
+            {
+              "name": "WagePerHour",
+              "type": "number",
+              "currency": "ILS",
+              "required": true
+            },
+            {
+              "name": "HoursWorked",
+              "type": "number",
+              "step": 0.5,
+              "required": true
+            },
+            {
+              "name": "PaymentDate",
+              "type": "date"
+            },
+            {
+              "name": "PaymentStatus",
+              "type": "choice",
+              "options": ["Paid", "Pending", "Cancelled"],
+              "default": "Pending"
+            },
+            {
+              "name": "Notes",
+              "type": "textarea"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reminders",
+      "name": "Reminders",
+      "icon": "notifications",
+      "type": "list",
+      "dataSource": "Reminders",
+      "components": [
+        {
+          "type": "form",
+          "action": "add",
+          "fields": [
+            {
+              "name": "Title",
+              "type": "text",
+              "required": true
+            },
+            {
+              "name": "Description",
+              "type": "textarea",
+              "required": true
+            },
+            {
+              "name": "EventID",
+              "type": "relation",
+              "relatedTable": "Events",
+              "displayField": "EventName"
+            },
+            {
+              "name": "ReminderDate",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "ReminderTime",
+              "type": "time",
+              "required": true
+            },
+            {
+              "name": "Assignee",
+              "type": "text",
+              "required": true
+            },
+            {
+              "name": "Priority",
+              "type": "choice",
+              "options": ["Low", "Medium", "High"],
+              "default": "Medium"
+            },
+            {
+              "name": "IsRecurring",
+              "type": "checkbox"
+            },
+            {
+              "name": "RecurrencePattern",
+              "type": "choice",
+              "options": ["Daily", "Weekly", "Monthly", "Yearly"],
+              "conditional": "IsRecurring == true"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tasks",
+      "name": "Tasks",
+      "icon": "assignment",
+      "type": "list",
+      "dataSource": "Tasks",
+      "components": [
+        {
+          "type": "form",
+          "action": "add",
+          "fields": [
+            {
+              "name": "Title",
+              "type": "text",
+              "required": true
+            },
+            {
+              "name": "Description",
+              "type": "textarea",
+              "required": true
+            },
+            {
+              "name": "AssignedTo",
+              "type": "text",
+              "required": true
+            },
+            {
+              "name": "Priority",
+              "type": "choice",
+              "options": ["Low", "Medium", "High"],
+              "default": "Medium"
+            },
+            {
+              "name": "Status",
+              "type": "choice",
+              "options": ["Pending", "In Progress", "Completed", "Cancelled"],
+              "default": "Pending"
+            },
+            {
+              "name": "DueDate",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "EventID",
+              "type": "relation",
+              "relatedTable": "Events",
+              "displayField": "EventName"
+            },
+            {
+              "name": "Category",
+              "type": "choice",
+              "options": ["Operations", "Technical", "Setup", "Logistics", "Quality Control", "Finance"]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "calculations": [
+    {
+      "name": "TotalPrice",
+      "formula": "BasePrice + DecorationCost + DJCost + CakeCost + FruitsCost + NutsCost + OtherCost"
+    },
+    {
+      "name": "TotalWage",
+      "formula": "WagePerHour * HoursWorked"
+    },
+    {
+      "name": "OutstandingBalance",
+      "formula": "TotalEventCost - SUM(AmountPaid)"
+    }
+  ],
+  "webhooks": [
+    {
+      "name": "zapier_monthly_report",
+      "url": "https://hooks.zapier.com/hooks/catch/YOUR_WEBHOOK_ID/",
+      "method": "POST"
+    }
+  ]
+}
