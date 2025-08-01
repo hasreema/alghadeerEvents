@@ -1,0 +1,109 @@
+# Events Sheet
+EventID,EventName,EventType,EventDate,EventTime,Location,Gender,GuestCount,BasePrice,TotalPrice,DJ,DJCost,DJProvider,Cake,CakeQuantity,CakeCost,CakeProvider,Fruits,FruitsCost,FruitsProvider,Nuts,NutsCost,NutsProvider,CustomRequest1,CustomRequest1Cost,CustomRequest1Provider,CustomRequest2,CustomRequest2Cost,CustomRequest2Provider,Decoration,DecorationDescription,DecorationCost,Notes,PaymentStatus,TotalIncome,TotalExpenses,EmployeeCosts,CreatedDate,ModifiedDate
+1,Ahmed & Fatima Wedding,Wedding,2024-02-15,18:00,Hall Floor 0,Mixed,150,5000,7500,TRUE,800,Hall,TRUE,2,400,Client,TRUE,300,Hall,FALSE,0,,FALSE,0,,FALSE,0,,Standard,,500,Beautiful wedding celebration,Partially Paid,7500,2200,1200,2024-01-15,2024-01-15
+2,Sara Graduation Party,Graduation,2024-03-20,16:00,Garden,Mixed,80,3000,4200,TRUE,600,Client,TRUE,1,200,Client,FALSE,0,,TRUE,150,Hall,FALSE,0,,FALSE,0,,Customized,Floral arrangements,300,Outdoor graduation event,Paid,4200,1250,800,2024-02-01,2024-02-01
+
+# Payments Sheet
+PaymentID,EventID,PaymentDate,Amount,PaymentMethod,ReceiptImage,Notes,PaymentType
+1,1,2024-01-20,3000,Cash,,First payment,Partial
+2,1,2024-02-10,2000,Bank Transfer,,Second payment,Partial
+3,2,2024-02-15,4200,Cash,,Full payment,Full
+
+# EmployeesPayments Sheet
+EmployeePaymentID,EventID,EmployeeName,Role,WagePerHour,HoursWorked,TotalWage,PaymentDate,PaymentStatus,Notes
+1,1,Mohammad Ali,Waiter,50,8,400,2024-02-16,Paid,Excellent service
+2,1,Sarah Ahmed,Kitchen Staff,45,10,450,2024-02-16,Paid,
+3,1,Omar Hassan,Security,60,6,360,2024-02-16,Pending,
+4,2,Layla Ibrahim,Coordinator,80,5,400,2024-03-21,Paid,Event coordination
+5,2,Khalil Mahmoud,Setup Crew,40,10,400,2024-03-21,Paid,
+
+# PriceList Sheet
+ItemID,ItemName,Category,DefaultPrice,Unit,Provider,IsActive,Notes
+1,DJ Service,Entertainment,800,Event,Hall,TRUE,Professional DJ with sound system
+2,Wedding Cake,Food,200,Piece,Client,TRUE,Per cake piece
+3,Fruits Platter,Food,300,Event,Hall,TRUE,Seasonal fruits arrangement
+4,Nuts Selection,Food,150,Event,Hall,TRUE,Premium nuts selection
+5,Standard Decoration,Decoration,500,Event,Hall,TRUE,Basic hall decoration
+6,Custom Decoration,Decoration,1000,Event,Hall,TRUE,Customized decoration per request
+7,Hall Floor 0 Base,Venue,5000,Event,Hall,TRUE,Ground floor hall rental
+8,Hall Floor 1 Base,Venue,4500,Event,Hall,TRUE,First floor hall rental
+9,Garden Base,Venue,3000,Event,Hall,TRUE,Outdoor garden rental
+10,Waterfall Base,Venue,6000,Event,Hall,TRUE,Waterfall area rental
+
+# Reminders Sheet
+ReminderID,Title,Description,RelatedEventID,ReminderDate,ReminderTime,AssignedTo,ReminderType,Status,IsRecurring,RecurrencePattern,CreatedDate
+1,Turn off generator,Turn off generator after event completion,1,2024-02-15,23:00,Omar Hassan,Post-Event,Pending,FALSE,,2024-02-14
+2,Final payment reminder,Contact client for final payment,1,2024-02-13,10:00,Admin,Payment,Completed,FALSE,,2024-02-10
+3,Weekly equipment check,Check all sound and lighting equipment,0,2024-02-19,09:00,Mohammad Ali,Maintenance,Pending,TRUE,Weekly,2024-02-12
+4,Setup preparation,Begin event setup preparation,2,2024-03-20,14:00,Layla Ibrahim,Pre-Event,Pending,FALSE,,2024-03-19
+
+# Contacts Sheet
+ContactID,EventID,ContactName,ContactType,PhoneNumber,Email,Notes,IsPrimary
+1,1,Ahmed Khalil,Groom,+970598123456,ahmed@email.com,Main contact for wedding,TRUE
+2,1,Fatima Salem,Bride,+970599987654,fatima@email.com,Secondary contact,FALSE
+3,2,Sara Mohammad,Graduate,+970597456123,sara@email.com,Graduate contact,TRUE
+4,2,Nadia Mohammad,Mother,+970596321789,nadia@email.com,Parent contact,FALSE
+
+# Tasks Sheet
+TaskID,TaskTitle,TaskDescription,AssignedTo,DueDate,Priority,Status,RelatedEventID,CreatedDate,CompletedDate
+1,Purchase fresh flowers,Buy fresh flowers for wedding decoration,Layla Ibrahim,2024-02-14,High,Completed,1,2024-02-10,2024-02-14
+2,Confirm catering menu,Finalize menu with catering team,Sarah Ahmed,2024-02-13,Medium,Completed,1,2024-02-08,2024-02-13
+3,Setup sound system,Install and test sound system for graduation,Mohammad Ali,2024-03-19,High,Pending,2,2024-03-15,
+4,Clean waterfall area,Deep cleaning of waterfall venue,Omar Hassan,2024-02-20,Low,Pending,0,2024-02-18,
+
+# Languages Sheet
+LanguageKey,English,Hebrew,Arabic
+app_title,Al Ghadeer Events,אירועי אל ע'דיר,أحداث الغدير
+dashboard,Dashboard,לוח מחוונים,لوحة القيادة
+events,Events,אירועים,الأحداث
+payments,Payments,תשלומים,المدفوعات
+employees,Employees,עובדים,الموظفين
+reminders,Reminders,תזכורות,التذكيرات
+tasks,Tasks,משימות,المهام
+event_name,Event Name,שם האירוע,اسم الحدث
+event_type,Event Type,סוג האירוע,نوع الحدث
+event_date,Event Date,תאריך האירוע,تاريخ الحدث
+location,Location,מיקום,الموقع
+guest_count,Guest Count,מספר אורחים,عدد الضيوف
+base_price,Base Price,מחיר בסיס,السعر الأساسي
+total_price,Total Price,מחיר כולל,السعر الإجمالي
+wedding,Wedding,חתונה,زفاف
+henna,Henna,חינה,حناء
+engagement,Engagement,אירוסין,خطوبة
+graduation,Graduation,סיום לימודים,تخرج
+other,Other,אחר,آخر
+hall_floor_0,Hall Floor 0,אולם קומה 0,قاعة الطابق الأرضي
+hall_floor_1,Hall Floor 1,אולם קומה 1,قاعة الطابق الأول
+garden,Garden,גן,الحديقة
+waterfall,Waterfall,מפל,الشلال
+men,Men,גברים,رجال
+women,Women,נשים,نساء
+mixed,Mixed,מעורב,مختلط
+paid,Paid,שולם,مدفوع
+partially_paid,Partially Paid,שולם חלקית,مدفوع جزئياً
+not_paid,Not Paid,לא שולם,غير مدفوع
+dj_service,DJ Service,שירות דיג׳יי,خدمة دي جي
+cake,Cake,עוגה,كعكة
+fruits,Fruits,פירות,فواكه
+nuts,Nuts,אגוזים,مكسرات
+decoration,Decoration,קישוט,زينة
+standard,Standard,סטנדרטי,معياري
+customized,Customized,מותאם אישית,مخصص
+notes,Notes,הערות,ملاحظات
+save,Save,שמור,احفظ
+cancel,Cancel,בטל,إلغاء
+add,Add,הוסף,أضف
+edit,Edit,ערוך,تحرير
+delete,Delete,מחק,حذف
+search,Search,חיפוש,بحث
+filter,Filter,סינון,تصفية
+export,Export,ייצא,تصدير
+import,Import,ייבא,استيراد
+settings,Settings,הגדרות,الإعدادات
+profile,Profile,פרופיל,الملف الشخصي
+logout,Logout,התנתק,تسجيل الخروج
+total_income,Total Income,הכנסה כוללת,إجمالي الدخل
+total_expenses,Total Expenses,הוצאות כוללות,إجمالي المصروفات
+net_profit,Net Profit,רווח נקי,صافي الربح
+profitability,Profitability,רווחיות,الربحية
+outstanding_balance,Outstanding Balance,יתרה לתשלום,الرصيد المستحق
