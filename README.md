@@ -1,275 +1,222 @@
-# Al Ghadeer Events Management System
+# Al Ghadeer Events - Event Management System
 
 A comprehensive internal Event Management System for hall owners, designed to manage all aspects of events including event details, payments, employees, special requests, expenses, profitability, reminders, and automatic reporting.
 
 ## 🌟 Features
 
-### Core Features
-- **Events Management**: Complete event lifecycle management with automatic ID generation
-- **Payments Tracking**: Multi-payment support with receipt uploads and outstanding balance calculations
-- **Employee Management**: Labor cost tracking with payment scheduling
-- **Reminders & Tasks**: Automated reminders with push notifications
-- **Profitability Analysis**: Real-time profit calculations and financial insights
-- **Multi-language Support**: English, Hebrew, and Arabic interface
-- **Automated Reporting**: Monthly PDF reports with email and WhatsApp delivery
+### 📅 Events Management
+- **Event Details**: Name, type (wedding, henna, engagement, graduation, other), date & time, location, gender, guest count
+- **Special Requests**: DJ, cake, fruits, nuts, custom items with quantity, cost, and provider
+- **Decoration**: Standard/customized with description and cost
+- **Dynamic Pricing**: Base price with automatic total cost calculation
+- **Event ID**: Automatically generated unique identifiers
+- **Notes**: Free text field for additional information
 
-### Dashboard Features
-- **Profitability Meter**: Visual profit indicator with color-coded status
-- **Revenue vs Expenses Charts**: Interactive financial analytics
-- **Event Type Distribution**: Pie charts for event categorization
-- **Upcoming Events**: Real-time event calendar with alerts
-- **Outstanding Balances**: Payment tracking with overdue notifications
+### 💰 Payments Management
+- **Payment Status**: Paid, Partially paid, Not paid
+- **Multiple Payments**: Track partial payments with dates and amounts
+- **Receipt Upload**: Support for images and PDFs
+- **Automatic Calculations**: Outstanding balance calculation
+- **Payment Methods**: Cash, Card, Bank Transfer, Check, Other
 
-### Advanced Features
-- **Google Sheets Integration**: Data synchronization with external spreadsheets
-- **Push Notifications**: Real-time alerts for reminders and payments
-- **WhatsApp Integration**: Automated messaging for reports and reminders
-- **File Management**: Receipt uploads and document storage
-- **Export Capabilities**: Excel and PDF export functionality
+### 👥 Employees & Labor Costs
+- **Employee Management**: Add employees per event with name, role, wage
+- **Payment Tracking**: Payment dates, status, and notes
+- **Automatic Calculations**: Total labor cost per event
+- **Roles**: Waiter, Chef, Cleaner, Manager, Other
 
-## 🚀 Quick Start
+### 📊 Expenses & Profitability
+- **Automatic Calculations**: Total income, total expenses, net profit, profitability percentage
+- **Cost Differentiation**: Hall-provided vs. client-provided items
+- **Real-time Updates**: Dynamic profitability tracking
+
+### 🔔 Reminders & Tasks
+- **Reminder Types**: Payment, maintenance, preparation, follow-up, general
+- **Assignment**: Assign reminders to specific people
+- **Recurring Reminders**: Support for recurring patterns
+- **Predefined Reminders**: Quick setup for common tasks
+- **Status Tracking**: Pending, completed, cancelled
+
+### 📈 Dashboard & Analytics
+- **Profitability Meter**: Visual indicator with color coding (Green/Yellow/Red)
+- **Revenue vs Expenses**: Bar chart visualization
+- **Event Distribution**: Pie chart by event type and location
+- **Alerts**: Upcoming events and outstanding balances
+- **Quick Actions**: Fast access to common tasks
+
+### 📋 Reports
+- **Monthly Reports**: Automatic PDF generation in Hebrew
+- **Email & WhatsApp**: Automated delivery on the 1st of each month
+- **Manual Trigger**: Generate reports on demand from dashboard
+- **Content**: Revenue, expenses, profit, events, balances, employees, graphs
+- **Export Options**: CSV export for data analysis
+
+### 🔔 Notifications
+- **Push Notifications**: For reminders, unpaid balances, and critical alerts
+- **Email Notifications**: Monthly reports and payment reminders
+- **WhatsApp Integration**: Automated messaging for reports and alerts
+
+### 🌍 Multi-language Support
+- **Languages**: English (default), Hebrew, Arabic
+- **Dynamic UI**: Text pulled from language configuration
+- **Reports**: Generated in Hebrew by default
+
+## 🏗️ Technical Architecture
+
+### Backend (Node.js + Express)
+- **Framework**: Express.js with middleware for security and performance
+- **Database**: MongoDB with Mongoose ODM
+- **API Validation**: express-validator for input validation
+- **Security**: helmet, cors, express-rate-limit, compression
+- **File Uploads**: multer for handling receipt uploads
+- **PDF Generation**: pdfkit for report generation
+- **Email Service**: nodemailer for email notifications
+- **Google Sheets Integration**: googleapis for data synchronization
+
+### Frontend (HTML5 + CSS3 + JavaScript)
+- **UI Framework**: Bootstrap 5 for responsive design
+- **Icons**: Font Awesome for consistent iconography
+- **Charts**: Chart.js for data visualization
+- **Modals**: Bootstrap modals for forms and details
+- **Responsive Design**: Mobile-friendly interface
+
+### Data Sources
+- **Primary**: MongoDB database for real-time operations
+- **Secondary**: Google Sheets for backup and external access
+- **Sync**: Bidirectional synchronization between MongoDB and Google Sheets
+
+## 🚀 Installation & Setup
 
 ### Prerequisites
 - Node.js (v16 or higher)
-- MongoDB (v4.4 or higher)
-- npm or yarn package manager
+- MongoDB (local or cloud)
+- Google Sheets API credentials
+- Email service (Gmail recommended)
 
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd alghadeer-events-management
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Environment Configuration**
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Edit `.env` file with your configuration:
-   ```env
-   # Database
-   MONGODB_URI=mongodb://localhost:27017/alghadeer_events
-   
-   # Email (Gmail)
-   EMAIL_USER=alghadeerevents@gmail.com
-   EMAIL_PASSWORD=your-app-password
-   
-   # WhatsApp
-   WHATSAPP_API_KEY=your-whatsapp-api-key
-   WHATSAPP_PHONE_NUMBER=+970595781722
-   
-   # Google Sheets
-   GOOGLE_SERVICE_ACCOUNT_KEY_FILE=google-credentials.json
-   GOOGLE_SPREADSHEET_ID=your-spreadsheet-id
-   ```
-
-4. **Database Setup**
-   ```bash
-   # Start MongoDB (if not running)
-   mongod
-   
-   # The application will automatically create collections on first run
-   ```
-
-5. **Start the Application**
-   ```bash
-   # Development mode
-   npm run dev
-   
-   # Production mode
-   npm start
-   ```
-
-6. **Access the Application**
-   - Open your browser and navigate to `http://localhost:3000`
-   - The system will be ready to use
-
-## 📋 System Requirements
-
-### Minimum Requirements
-- **Server**: 2GB RAM, 1 CPU core
-- **Storage**: 10GB available space
-- **Network**: Stable internet connection for notifications
-
-### Recommended Requirements
-- **Server**: 4GB RAM, 2 CPU cores
-- **Storage**: 50GB available space
-- **Network**: High-speed internet for file uploads
-
-## 🏗️ Architecture
-
-### Backend Stack
-- **Runtime**: Node.js with Express.js
-- **Database**: MongoDB with Mongoose ODM
-- **Authentication**: JWT tokens
-- **File Uploads**: Multer middleware
-- **PDF Generation**: PDFKit
-- **Email**: Nodemailer
-- **Validation**: Express-validator
-
-### Frontend Stack
-- **Framework**: Vanilla JavaScript with Bootstrap 5
-- **Charts**: Chart.js for data visualization
-- **Icons**: Font Awesome
-- **Responsive Design**: Mobile-first approach
-
-### External Integrations
-- **Google Sheets API**: Data synchronization
-- **WhatsApp Business API**: Automated messaging
-- **Firebase Cloud Messaging**: Push notifications
-- **Gmail SMTP**: Email delivery
-
-## 📊 Database Schema
-
-### Events Collection
-```javascript
-{
-  eventId: String,           // Auto-generated unique ID
-  name: String,              // Event name
-  type: String,              // wedding, henna, engagement, graduation, other
-  date: Date,                // Event date and time
-  location: String,          // Hall Floor 0, Hall Floor 1, Garden, Waterfall
-  gender: String,            // Men, Women, Mixed
-  guestCount: Number,        // Number of guests
-  basePrice: Number,         // Base price in Shekel
-  totalCost: Number,         // Calculated total cost
-  additionalRequests: Array, // Special requests (DJ, cake, etc.)
-  decoration: Object,        // Decoration details
-  notes: String,             // Additional notes
-  status: String,            // upcoming, ongoing, completed, cancelled
-  createdAt: Date,
-  updatedAt: Date
-}
+### 1. Clone the Repository
+```bash
+git clone <repository-url>
+cd alghadeer-events
 ```
 
-### Payments Collection
-```javascript
-{
-  eventId: ObjectId,         // Reference to event
-  receiptNumber: String,     // Auto-generated receipt number
-  amount: Number,            // Payment amount
-  date: Date,                // Payment date
-  method: String,            // cash, card, bank_transfer, check
-  status: String,            // paid, partially_paid, not_paid, overdue
-  receiptFile: String,       // File path for uploaded receipt
-  notes: String,             // Payment notes
-  createdAt: Date,
-  updatedAt: Date
-}
+### 2. Install Dependencies
+```bash
+npm install
 ```
 
-### Employees Collection
-```javascript
-{
-  eventId: ObjectId,         // Reference to event
-  name: String,              // Employee name
-  role: String,              // Employee role
-  wage: Number,              // Wage amount
-  paymentDate: Date,         // Payment due date
-  status: String,            // paid, pending, overdue, cancelled
-  contactInfo: String,       // Contact information
-  notes: String,             // Employee notes
-  createdAt: Date,
-  updatedAt: Date
-}
-```
+### 3. Environment Configuration
+Create a `.env` file in the root directory:
 
-### Reminders Collection
-```javascript
-{
-  title: String,             // Reminder title
-  description: String,       // Reminder description
-  eventId: ObjectId,         // Reference to event (optional)
-  date: Date,                // Reminder date and time
-  assignee: String,          // Assigned person
-  type: String,              // one_time, recurring, urgent, general
-  recurrencePattern: String, // Recurrence pattern for recurring reminders
-  status: String,            // pending, completed, cancelled, overdue
-  createdAt: Date,
-  updatedAt: Date
-}
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-
-#### Required Configuration
 ```env
-# Server
+# Server Configuration
 PORT=3000
 NODE_ENV=development
 
-# Database
+# Database Configuration
 MONGODB_URI=mongodb://localhost:27017/alghadeer_events
+MONGODB_URI_PROD=mongodb://your-production-uri
 
-# Email
+# Email Configuration
 EMAIL_USER=alghadeerevents@gmail.com
-EMAIL_PASSWORD=your-app-password
+EMAIL_PASS=your-app-password
+EMAIL_SERVICE=gmail
 
-# WhatsApp
+# WhatsApp Configuration
 WHATSAPP_API_KEY=your-whatsapp-api-key
 WHATSAPP_PHONE_NUMBER=+970595781722
 
-# Google Sheets
-GOOGLE_SERVICE_ACCOUNT_KEY_FILE=google-credentials.json
-GOOGLE_SPREADSHEET_ID=your-spreadsheet-id
+# Google Sheets Configuration
+GOOGLE_SHEETS_CLIENT_EMAIL=your-service-account-email
+GOOGLE_SHEETS_PRIVATE_KEY=your-private-key
+GOOGLE_SHEETS_SPREADSHEET_ID=your-spreadsheet-id
 
-# JWT
-JWT_SECRET=your-jwt-secret-key
-```
-
-#### Optional Configuration
-```env
-# Push Notifications
-FIREBASE_PROJECT_ID=your-firebase-project-id
-FIREBASE_PRIVATE_KEY=your-firebase-private-key
-FIREBASE_CLIENT_EMAIL=your-firebase-client-email
-
-# File Uploads
-MAX_FILE_SIZE=5242880
-UPLOAD_PATH=uploads
-
-# Rate Limiting
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=100
+# Security
+JWT_SECRET=your-jwt-secret
+SESSION_SECRET=your-session-secret
 
 # Company Information
-COMPANY_NAME=Al Ghadeer Events
+COMPANY_NAME=AlghadeerEvents
 COMPANY_EMAIL=alghadeerevents@gmail.com
-COMPANY_PHONE=+970595781722
+COMPANY_WHATSAPP=+970595781722
+COMPANY_LOGO=/images/logo.png
+
+# Default Settings
+DEFAULT_LANGUAGE=en
+TIMEZONE=Asia/Jerusalem
+CURRENCY=ILS
 ```
 
-### Google Sheets Setup
+### 4. Database Setup
+```bash
+# Start MongoDB (if running locally)
+mongod
 
-1. **Create Google Cloud Project**
-   - Go to [Google Cloud Console](https://console.cloud.google.com/)
-   - Create a new project
-   - Enable Google Sheets API
+# The application will automatically create collections on first run
+```
 
-2. **Create Service Account**
-   - Go to IAM & Admin > Service Accounts
-   - Create a new service account
-   - Download the JSON key file
-   - Save as `google-credentials.json` in project root
+### 5. Google Sheets Setup
+1. Create a Google Cloud Project
+2. Enable Google Sheets API
+3. Create a service account
+4. Download the JSON credentials
+5. Share your Google Sheets with the service account email
 
-3. **Share Google Sheet**
-   - Create a new Google Sheet
-   - Share with service account email (from JSON file)
-   - Copy the spreadsheet ID from URL
+### 6. Start the Application
+```bash
+# Development mode
+npm run dev
 
-## 📱 API Endpoints
+# Production mode
+npm start
+```
+
+The application will be available at `http://localhost:3000`
+
+## 📱 Usage Guide
+
+### Dashboard
+- **Overview**: View key metrics and profitability indicators
+- **Quick Actions**: Add events, payments, employees, or generate reports
+- **Charts**: Visual representation of revenue, expenses, and event distribution
+- **Recent Events**: Latest events with quick access to details
+
+### Events Management
+1. **Add Event**: Click "Add New Event" and fill in the required details
+2. **Event Types**: Select from predefined types or use "Other" with custom text
+3. **Location**: Choose from available venues (Hall Floor 0, Hall Floor 1, Garden, Waterfall)
+4. **Special Requests**: Add additional services with costs and providers
+5. **Decoration**: Specify decoration type and costs
+6. **Filter & Search**: Use filters to find specific events
+
+### Payments Management
+1. **Add Payment**: Link payments to specific events
+2. **Receipt Upload**: Upload receipt images or PDFs
+3. **Status Tracking**: Monitor payment status and outstanding balances
+4. **Multiple Payments**: Record partial payments for the same event
+
+### Employees Management
+1. **Add Employee**: Assign employees to specific events
+2. **Role Assignment**: Define roles and wages
+3. **Payment Tracking**: Monitor employee payment status
+4. **Overdue Alerts**: Get notified of overdue employee payments
+
+### Reminders Management
+1. **Create Reminders**: Set up task reminders with due dates
+2. **Quick Reminders**: Use predefined templates for common tasks
+3. **Assignment**: Assign reminders to specific people
+4. **Status Updates**: Mark reminders as completed or cancelled
+
+### Reports & Analytics
+1. **Monthly Reports**: Generate comprehensive monthly reports
+2. **Profitability Analysis**: View detailed profitability breakdowns
+3. **Export Data**: Export data to CSV for external analysis
+4. **Charts**: Visual analytics for business insights
+
+## 🔧 API Endpoints
 
 ### Events
-- `GET /api/events` - Get all events with filtering
-- `GET /api/events/:id` - Get single event
+- `GET /api/events` - Get all events with filtering and pagination
+- `GET /api/events/:id` - Get specific event with profitability calculations
 - `POST /api/events` - Create new event
 - `PUT /api/events/:id` - Update event
 - `DELETE /api/events/:id` - Delete event
@@ -277,7 +224,7 @@ COMPANY_PHONE=+970595781722
 
 ### Payments
 - `GET /api/payments` - Get all payments
-- `GET /api/payments/:id` - Get single payment
+- `GET /api/payments/:id` - Get specific payment
 - `POST /api/payments` - Create new payment
 - `PUT /api/payments/:id` - Update payment
 - `POST /api/payments/:id/receipt` - Upload receipt
@@ -287,19 +234,20 @@ COMPANY_PHONE=+970595781722
 
 ### Employees
 - `GET /api/employees` - Get all employees
-- `GET /api/employees/:id` - Get single employee
+- `GET /api/employees/:id` - Get specific employee
 - `POST /api/employees` - Create new employee
 - `PUT /api/employees/:id` - Update employee
 - `PATCH /api/employees/:id/mark-paid` - Mark employee as paid
 - `DELETE /api/employees/:id` - Delete employee
 - `GET /api/employees/overdue/payments` - Get overdue payments
+- `GET /api/employees/upcoming/payments` - Get upcoming payments
 
 ### Reminders
 - `GET /api/reminders` - Get all reminders
-- `GET /api/reminders/:id` - Get single reminder
+- `GET /api/reminders/:id` - Get specific reminder
 - `POST /api/reminders` - Create new reminder
 - `PUT /api/reminders/:id` - Update reminder
-- `PATCH /api/reminders/:id/complete` - Mark reminder as complete
+- `PATCH /api/reminders/:id/complete` - Mark reminder as completed
 - `PATCH /api/reminders/:id/cancel` - Cancel reminder
 - `DELETE /api/reminders/:id` - Delete reminder
 - `GET /api/reminders/overdue/reminders` - Get overdue reminders
@@ -307,7 +255,7 @@ COMPANY_PHONE=+970595781722
 ### Reports
 - `POST /api/reports/monthly` - Generate monthly report
 - `GET /api/reports/dashboard` - Get dashboard statistics
-- `GET /api/reports/profitability` - Get profitability reports
+- `GET /api/reports/profitability` - Get profitability data
 - `GET /api/reports/outstanding-balances` - Get outstanding balances
 
 ### Notifications
@@ -317,256 +265,173 @@ COMPANY_PHONE=+970595781722
 - `POST /api/notifications/payment-reminder` - Send payment reminder
 - `POST /api/notifications/reminder-notification` - Send reminder notification
 
-### Google Sheets
+### Google Sheets Integration
 - `POST /api/google-sheets/sync/all` - Sync all data to Google Sheets
 - `POST /api/google-sheets/sync/events` - Sync events data
 - `POST /api/google-sheets/sync/payments` - Sync payments data
 - `POST /api/google-sheets/sync/employees` - Sync employees data
 - `POST /api/google-sheets/sync/reminders` - Sync reminders data
-- `GET /api/google-sheets/read/:sheetName` - Read data from Google Sheet
-
-## 🎯 Usage Guide
-
-### Adding a New Event
-
-1. **Navigate to Events Page**
-   - Click on "Events" in the navigation menu
-
-2. **Click "Add Event"**
-   - Fill in event details:
-     - Event name
-     - Event type (dropdown with "other" option for free text)
-     - Date and time (calendar picker)
-     - Location (dropdown)
-     - Gender (Men/Women/Mixed)
-     - Guest count
-     - Base price
-
-3. **Add Special Requests**
-   - Check boxes for DJ, cake, fruits, nuts, custom items
-   - Specify quantities and costs
-   - Choose provider (hall/client)
-
-4. **Add Decoration**
-   - Select standard or customized
-   - Add description and cost if customized
-
-5. **Save Event**
-   - Event ID will be automatically generated
-   - Total cost will be calculated automatically
-
-### Managing Payments
-
-1. **Navigate to Payments Page**
-   - Click on "Payments" in the navigation menu
-
-2. **Add Payment**
-   - Select the event
-   - Enter payment amount
-   - Choose payment method
-   - Set payment date
-   - Upload receipt (optional)
-   - Add notes
-
-3. **Track Outstanding Balances**
-   - View outstanding balances in dashboard
-   - Send payment reminders via WhatsApp/email
-
-### Managing Employees
-
-1. **Navigate to Employees Page**
-   - Click on "Employees" in the navigation menu
-
-2. **Add Employee**
-   - Select the event
-   - Enter employee name and role
-   - Set wage amount
-   - Set payment date
-   - Add contact information and notes
-
-3. **Track Labor Costs**
-   - View total labor cost per event
-   - Track overdue payments
-   - Mark employees as paid
-
-### Setting Up Reminders
-
-1. **Navigate to Reminders Page**
-   - Click on "Reminders" in the navigation menu
-
-2. **Add Reminder**
-   - Enter title and description
-   - Select related event (optional)
-   - Set date and time
-   - Assign to person
-   - Choose reminder type (one-time/recurring)
-   - Set recurrence pattern if needed
-
-3. **Use Predefined Reminders**
-   - Click on predefined reminder buttons
-   - Customize as needed
-
-### Generating Reports
-
-1. **Navigate to Reports Page**
-   - Click on "Reports" in the navigation menu
-
-2. **View Dashboard Statistics**
-   - Profitability meter
-   - Revenue vs expenses charts
-   - Event type distribution
-   - Upcoming events
-   - Outstanding balances
-
-3. **Generate Monthly Report**
-   - Click "Generate Monthly Report"
-   - Report will be sent via email and WhatsApp
-   - PDF will be available for download
-
-4. **Generate Custom Report**
-   - Select date range
-   - Choose report type
-   - Generate and download
+- `GET /api/google-sheets/read/:sheetName` - Read data from Google Sheets
+- `GET /api/google-sheets/test-connection` - Test Google Sheets connection
 
 ## 🔒 Security Features
 
-### Authentication & Authorization
-- JWT token-based authentication
-- Role-based access control
-- Session management
+- **Input Validation**: All inputs validated using express-validator
+- **Rate Limiting**: API rate limiting to prevent abuse
+- **CORS Protection**: Configured CORS for security
+- **Helmet**: Security headers for protection against common vulnerabilities
+- **File Upload Security**: Restricted file types and sizes
+- **Environment Variables**: Sensitive data stored in environment variables
 
-### Data Protection
-- Input validation and sanitization
-- SQL injection prevention
-- XSS protection
-- CSRF protection
+## 📊 Data Models
 
-### File Security
-- File type validation
-- File size limits
-- Secure file storage
-- Virus scanning (optional)
-
-### API Security
-- Rate limiting
-- Request validation
-- Error handling
-- Logging and monitoring
-
-## 📈 Monitoring & Maintenance
-
-### Health Checks
-- API health endpoint: `GET /api/health`
-- Database connectivity monitoring
-- External service status checks
-
-### Logging
-- Application logs in `logs/app.log`
-- Error tracking and reporting
-- Performance monitoring
-
-### Backup
-- Automated database backups
-- File system backups
-- Configuration backups
-
-### Updates
-- Regular security updates
-- Feature updates
-- Bug fixes
-
-## 🆘 Troubleshooting
-
-### Common Issues
-
-#### Database Connection Issues
-```bash
-# Check MongoDB status
-sudo systemctl status mongod
-
-# Restart MongoDB
-sudo systemctl restart mongod
-
-# Check connection string in .env file
-MONGODB_URI=mongodb://localhost:27017/alghadeer_events
-```
-
-#### Email Configuration Issues
-```bash
-# Check Gmail app password
-# Enable 2-factor authentication
-# Generate app password for EMAIL_PASSWORD
-```
-
-#### File Upload Issues
-```bash
-# Check upload directory permissions
-chmod 755 uploads/
-
-# Check file size limits in .env
-MAX_FILE_SIZE=5242880
-```
-
-#### Google Sheets Integration Issues
-```bash
-# Verify service account credentials
-# Check spreadsheet sharing permissions
-# Validate spreadsheet ID in .env
-```
-
-### Performance Optimization
-
-#### Database Optimization
+### Event Schema
 ```javascript
-// Add indexes for frequently queried fields
-db.events.createIndex({ "date": 1 })
-db.payments.createIndex({ "eventId": 1 })
-db.employees.createIndex({ "eventId": 1 })
-db.reminders.createIndex({ "date": 1 })
+{
+  eventName: String,
+  eventType: String,
+  eventDate: Date,
+  eventTime: String,
+  location: String,
+  gender: String,
+  guestCount: Number,
+  basePrice: Number,
+  totalCost: Number,
+  additionalRequests: [{
+    item: String,
+    quantity: Number,
+    cost: Number,
+    provider: String
+  }],
+  decoration: {
+    type: String,
+    description: String,
+    cost: Number
+  },
+  notes: String,
+  status: String
+}
 ```
 
-#### Caching
+### Payment Schema
 ```javascript
-// Enable Redis caching (optional)
-REDIS_URL=redis://localhost:6379
+{
+  eventId: ObjectId,
+  amount: Number,
+  date: Date,
+  method: String,
+  status: String,
+  receiptFile: String,
+  notes: String,
+  receiptNumber: String
+}
 ```
 
-#### Compression
+### Employee Schema
 ```javascript
-// Enable gzip compression
-app.use(compression())
+{
+  eventId: ObjectId,
+  name: String,
+  role: String,
+  wage: Number,
+  paymentDate: Date,
+  paymentStatus: String,
+  contactInfo: String,
+  notes: String
+}
 ```
 
-## 🤝 Support
+### Reminder Schema
+```javascript
+{
+  title: String,
+  description: String,
+  eventId: ObjectId,
+  date: Date,
+  assignee: String,
+  type: String,
+  recurrencePattern: String,
+  status: String
+}
+```
 
-### Contact Information
-- **Company**: Al Ghadeer Events
+## 🚀 Deployment
+
+### Production Deployment
+1. **Environment Setup**: Configure production environment variables
+2. **Database**: Set up production MongoDB instance
+3. **SSL Certificate**: Configure HTTPS for security
+4. **Process Manager**: Use PM2 for process management
+5. **Reverse Proxy**: Configure Nginx for load balancing
+
+### Docker Deployment
+```bash
+# Build Docker image
+docker build -t alghadeer-events .
+
+# Run container
+docker run -p 3000:3000 --env-file .env alghadeer-events
+```
+
+### Cloud Deployment
+- **Heroku**: Deploy directly from GitHub
+- **AWS**: Use Elastic Beanstalk or EC2
+- **Google Cloud**: Use App Engine or Compute Engine
+- **Azure**: Use App Service or Virtual Machines
+
+## 🔧 Configuration
+
+### Environment Variables
+- `PORT`: Server port (default: 3000)
+- `MONGODB_URI`: MongoDB connection string
+- `EMAIL_USER`: Email service username
+- `EMAIL_PASS`: Email service password
+- `WHATSAPP_API_KEY`: WhatsApp Business API key
+- `GOOGLE_SHEETS_CLIENT_EMAIL`: Google service account email
+- `GOOGLE_SHEETS_PRIVATE_KEY`: Google service account private key
+- `JWT_SECRET`: JWT signing secret
+- `COMPANY_NAME`: Company name for branding
+- `DEFAULT_LANGUAGE`: Default application language
+
+### Customization
+- **Branding**: Update company information in environment variables
+- **Languages**: Add new languages in the translations file
+- **Event Types**: Modify event types in the frontend configuration
+- **Locations**: Update available locations in the frontend
+- **Roles**: Customize employee roles as needed
+
+## 📞 Support & Contact
+
+- **Company**: AlghadeerEvents
 - **Email**: alghadeerevents@gmail.com
 - **WhatsApp**: +970595781722
-
-### Documentation
-- API Documentation: Available at `/api/docs` (when implemented)
-- User Guide: Available in the application help section
-- Video Tutorials: Available on company YouTube channel
-
-### Bug Reports
-- Create an issue in the project repository
-- Include detailed error description
-- Attach relevant logs and screenshots
+- **Website**: [Company Website]
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🙏 Acknowledgments
+## 🤝 Contributing
 
-- Bootstrap for the responsive UI framework
-- Chart.js for data visualization
-- Font Awesome for icons
-- MongoDB for the database
-- Express.js for the web framework
-- All contributors and testers
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📝 Changelog
+
+### Version 1.0.0
+- Initial release
+- Complete event management system
+- Payment tracking and management
+- Employee management
+- Reminder system
+- Reports and analytics
+- Multi-language support
+- Google Sheets integration
+- Email and WhatsApp notifications
 
 ---
 
-**Al Ghadeer Events Management System** - Streamlining event management for hall owners since 2024.
+**Built with ❤️ for Al Ghadeer Events**

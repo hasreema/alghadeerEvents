@@ -1,626 +1,494 @@
-// Reports Management JavaScript
-let reportsData = [];
-let currentReportsPage = 1;
-let reportsPerPage = 10;
+// Reports page functionality
+let reportsData = {};
+let currentReportType = 'monthly';
+let currentReportPeriod = new Date().toISOString().slice(0, 7); // YYYY-MM format
 
 // Initialize reports page
 function loadReports() {
-    showLoading();
-    loadDashboardStats();
-    loadProfitabilityReports();
-    setupEventListeners();
+  showLoading();
+  loadDashboardStats();
+  loadProfitabilityData();
+  setupReportFilters();
+}
+
+// Setup report filters
+function setupReportFilters() {
+  const filterForm = document.getElementById('reportFilters');
+  if (filterForm) {
+    filterForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      loadReportData();
+    });
+
+    // Clear filters
+    const clearBtn = document.getElementById('clearReportFilters');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', clearReportFilters);
+    }
+  }
 }
 
 // Load dashboard statistics
 async function loadDashboardStats() {
-    try {
-        const response = await apiCall('/api/reports/dashboard', 'GET');
-        
-        if (response.success) {
-            updateDashboardStats(response.data);
-            createDashboardCharts(response.data);
-        } else {
-            showError('Failed to load dashboard statistics');
-        }
-    } catch (error) {
-        console.error('Error loading dashboard statistics:', error);
-        showError('Error loading dashboard statistics');
-    } finally {
-        hideLoading();
+  try {
+    const response = await apiCall('/api/reports/dashboard', 'GET');
+    
+    if (response.success) {
+      reportsData.dashboard = response.data;
+      updateDashboardStats();
+      updateProfitabilityMeter();
+      createDashboardCharts();
     }
+  } catch (error) {
+    showError('Failed to load dashboard statistics');
+  }
 }
 
 // Update dashboard statistics
-function updateDashboardStats(stats) {
-    if (!stats) return;
+function updateDashboardStats() {
+  const stats = reportsData.dashboard;
+  if (!stats) return;
 
-    // Update metric cards
-    const totalRevenueEl = document.getElementById('totalRevenue');
-    const totalExpensesEl = document.getElementById('totalExpenses');
-    const netProfitEl = document.getElementById('netProfit');
-    const profitabilityEl = document.getElementById('profitability');
-    const totalEventsEl = document.getElementById('totalEvents');
-    const outstandingBalancesEl = document.getElementById('outstandingBalances');
+  // Update metric cards
+  const totalRevenueEl = document.getElementById('totalRevenue');
+  const totalExpensesEl = document.getElementById('totalExpenses');
+  const netProfitEl = document.getElementById('netProfit');
+  const profitabilityEl = document.getElementById('profitability');
+  const totalEventsEl = document.getElementById('totalEvents');
+  const outstandingBalancesEl = document.getElementById('outstandingBalances');
 
-    if (totalRevenueEl) totalRevenueEl.textContent = formatCurrency(stats.totalRevenue || 0);
-    if (totalExpensesEl) totalExpensesEl.textContent = formatCurrency(stats.totalExpenses || 0);
-    if (netProfitEl) netProfitEl.textContent = formatCurrency(stats.netProfit || 0);
-    if (profitabilityEl) profitabilityEl.textContent = `${(stats.profitabilityPercentage || 0).toFixed(1)}%`;
-    if (totalEventsEl) totalEventsEl.textContent = stats.totalEvents || 0;
-    if (outstandingBalancesEl) outstandingBalancesEl.textContent = formatCurrency(stats.outstandingBalances || 0);
+  if (totalRevenueEl) totalRevenueEl.textContent = formatCurrency(stats.totalRevenue || 0);
+  if (totalExpensesEl) totalExpensesEl.textContent = formatCurrency(stats.totalExpenses || 0);
+  if (netProfitEl) netProfitEl.textContent = formatCurrency(stats.netProfit || 0);
+  if (profitabilityEl) profitabilityEl.textContent = `${(stats.profitabilityPercentage || 0).toFixed(1)}%`;
+  if (totalEventsEl) totalEventsEl.textContent = stats.totalEvents || 0;
+  if (outstandingBalancesEl) outstandingBalancesEl.textContent = formatCurrency(stats.outstandingBalances || 0);
 
-    // Update profitability meter
-    updateProfitabilityMeter(stats.profitabilityPercentage || 0);
-
-    // Update upcoming events
-    updateUpcomingEvents(stats.upcomingEvents || []);
-
-    // Update outstanding balances
-    updateOutstandingBalances(stats.outstandingBalancesList || []);
+  // Animate numbers
+  animateNumbers();
 }
 
 // Update profitability meter
-function updateProfitabilityMeter(percentage) {
-    const meterEl = document.getElementById('profitabilityMeter');
-    if (!meterEl) return;
+function updateProfitabilityMeter() {
+  const stats = reportsData.dashboard;
+  if (!stats) return;
 
-    // Determine color based on percentage
-    let color = 'success';
-    if (percentage < 10) color = 'danger';
-    else if (percentage < 25) color = 'warning';
-    else if (percentage < 50) color = 'info';
+  const meterEl = document.getElementById('profitabilityMeter');
+  if (!meterEl) return;
 
-    meterEl.innerHTML = `
-        <div class="progress" style="height: 30px;">
-            <div class="progress-bar bg-${color}" role="progressbar" 
-                 style="width: ${Math.min(percentage, 100)}%" 
-                 aria-valuenow="${percentage}" aria-valuemin="0" aria-valuemax="100">
-                ${percentage.toFixed(1)}%
-            </div>
+  const percentage = stats.profitabilityPercentage || 0;
+  let color = 'success';
+  let status = 'Excellent';
+
+  if (percentage < 20) {
+    color = 'danger';
+    status = 'Critical';
+  } else if (percentage < 40) {
+    color = 'warning';
+    status = 'Low';
+  } else if (percentage < 60) {
+    color = 'info';
+    status = 'Good';
+  }
+
+  meterEl.innerHTML = `
+    <div class="profitability-meter">
+      <div class="meter-circle ${color}">
+        <div class="meter-value">${percentage.toFixed(1)}%</div>
+        <div class="meter-label">${status}</div>
+      </div>
+      <div class="meter-details">
+        <div class="detail-item">
+          <span class="label">Revenue:</span>
+          <span class="value">${formatCurrency(stats.totalRevenue || 0)}</span>
         </div>
-        <div class="text-center mt-2">
-            <small class="text-muted">Profitability Rate</small>
+        <div class="detail-item">
+          <span class="label">Expenses:</span>
+          <span class="value">${formatCurrency(stats.totalExpenses || 0)}</span>
         </div>
-    `;
-}
-
-// Update upcoming events
-function updateUpcomingEvents(events) {
-    const containerEl = document.getElementById('upcomingEvents');
-    if (!containerEl) return;
-
-    if (events.length === 0) {
-        containerEl.innerHTML = `
-            <div class="text-center text-muted py-3">
-                <i class="fas fa-calendar fa-2x mb-2"></i>
-                <p>No upcoming events</p>
-            </div>
-        `;
-        return;
-    }
-
-    containerEl.innerHTML = events.map(event => `
-        <div class="card mb-2">
-            <div class="card-body p-3">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <h6 class="card-title mb-1">${event.name}</h6>
-                        <p class="card-text small text-muted mb-1">
-                            <i class="fas fa-calendar"></i> ${formatDate(event.date)}
-                        </p>
-                        <p class="card-text small text-muted mb-0">
-                            <i class="fas fa-map-marker-alt"></i> ${event.location}
-                        </p>
-                    </div>
-                    <div class="text-end">
-                        <span class="badge ${getEventStatusBadgeClass(event.status)}">
-                            ${event.status}
-                        </span>
-                        <div class="small text-muted mt-1">
-                            ${formatCurrency(event.totalCost)}
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="detail-item">
+          <span class="label">Net Profit:</span>
+          <span class="value">${formatCurrency(stats.netProfit || 0)}</span>
         </div>
-    `).join('');
-}
-
-// Update outstanding balances
-function updateOutstandingBalances(balances) {
-    const containerEl = document.getElementById('outstandingBalancesList');
-    if (!containerEl) return;
-
-    if (balances.length === 0) {
-        containerEl.innerHTML = `
-            <div class="text-center text-muted py-3">
-                <i class="fas fa-check-circle fa-2x mb-2 text-success"></i>
-                <p>No outstanding balances</p>
-            </div>
-        `;
-        return;
-    }
-
-    containerEl.innerHTML = balances.map(balance => `
-        <div class="card mb-2 border-warning">
-            <div class="card-body p-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-title mb-1">${balance.eventName}</h6>
-                        <p class="card-text small text-muted mb-0">
-                            <i class="fas fa-calendar"></i> ${formatDate(balance.eventDate)}
-                        </p>
-                    </div>
-                    <div class="text-end">
-                        <div class="text-warning fw-bold">
-                            ${formatCurrency(balance.outstandingAmount)}
-                        </div>
-                        <small class="text-muted">
-                            ${balance.daysOverdue} days overdue
-                        </small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `).join('');
+      </div>
+    </div>
+  `;
 }
 
 // Create dashboard charts
-function createDashboardCharts(stats) {
-    // Revenue vs Expenses Chart
-    createRevenueExpensesChart(stats.revenueExpensesData || []);
-    
-    // Events by Type Chart
-    createEventsByTypeChart(stats.eventsByTypeData || []);
-    
-    // Profitability by Location Chart
-    createProfitabilityByLocationChart(stats.profitabilityByLocationData || []);
-    
-    // Monthly Trends Chart
-    createMonthlyTrendsChart(stats.monthlyTrendsData || []);
+function createDashboardCharts() {
+  const stats = reportsData.dashboard;
+  if (!stats) return;
+
+  // Revenue vs Expenses Chart
+  createRevenueExpensesChart(stats.revenueVsExpenses);
+  
+  // Events by Type Chart
+  createEventsByTypeChart(stats.eventsByType);
+  
+  // Profitability by Location Chart
+  createProfitabilityByLocationChart(stats.profitabilityByLocation);
 }
 
 // Create revenue vs expenses chart
 function createRevenueExpensesChart(data) {
-    const ctx = document.getElementById('revenueExpensesChart');
-    if (!ctx) return;
+  const ctx = document.getElementById('revenueExpensesChart');
+  if (!ctx || !data) return;
 
-    const chart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: data.map(item => item.month),
-            datasets: [
-                {
-                    label: 'Revenue',
-                    data: data.map(item => item.revenue),
-                    backgroundColor: 'rgba(40, 167, 69, 0.8)',
-                    borderColor: 'rgba(40, 167, 69, 1)',
-                    borderWidth: 1
-                },
-                {
-                    label: 'Expenses',
-                    data: data.map(item => item.expenses),
-                    backgroundColor: 'rgba(220, 53, 69, 0.8)',
-                    borderColor: 'rgba(220, 53, 69, 1)',
-                    borderWidth: 1
-                }
-            ]
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: data.labels || [],
+      datasets: [
+        {
+          label: 'Revenue',
+          data: data.revenue || [],
+          backgroundColor: 'rgba(40, 167, 69, 0.8)',
+          borderColor: 'rgba(40, 167, 69, 1)',
+          borderWidth: 1
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return formatCurrency(value);
-                        }
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    position: 'top'
-                }
-            }
+        {
+          label: 'Expenses',
+          data: data.expenses || [],
+          backgroundColor: 'rgba(220, 53, 69, 0.8)',
+          borderColor: 'rgba(220, 53, 69, 1)',
+          borderWidth: 1
         }
-    });
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return formatCurrency(value);
+            }
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          position: 'top'
+        }
+      }
+    }
+  });
 }
 
 // Create events by type chart
 function createEventsByTypeChart(data) {
-    const ctx = document.getElementById('eventsByTypeChart');
-    if (!ctx) return;
+  const ctx = document.getElementById('eventsByTypeChart');
+  if (!ctx || !data) return;
 
-    const chart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: data.map(item => item.type),
-            datasets: [{
-                data: data.map(item => item.count),
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.8)',
-                    'rgba(54, 162, 235, 0.8)',
-                    'rgba(255, 206, 86, 0.8)',
-                    'rgba(75, 192, 192, 0.8)',
-                    'rgba(153, 102, 255, 0.8)'
-                ],
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            }
+  new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: data.labels || [],
+      datasets: [{
+        data: data.values || [],
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.8)',
+          'rgba(54, 162, 235, 0.8)',
+          'rgba(255, 206, 86, 0.8)',
+          'rgba(75, 192, 192, 0.8)',
+          'rgba(153, 102, 255, 0.8)'
+        ],
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom'
         }
-    });
+      }
+    }
+  });
 }
 
 // Create profitability by location chart
 function createProfitabilityByLocationChart(data) {
-    const ctx = document.getElementById('profitabilityByLocationChart');
-    if (!ctx) return;
+  const ctx = document.getElementById('profitabilityByLocationChart');
+  if (!ctx || !data) return;
 
-    const chart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: data.map(item => item.location),
-            datasets: [{
-                data: data.map(item => item.profitability),
-                backgroundColor: [
-                    'rgba(40, 167, 69, 0.8)',
-                    'rgba(255, 193, 7, 0.8)',
-                    'rgba(220, 53, 69, 0.8)',
-                    'rgba(23, 162, 184, 0.8)'
-                ],
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            }
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: data.labels || [],
+      datasets: [{
+        data: data.values || [],
+        backgroundColor: [
+          'rgba(40, 167, 69, 0.8)',
+          'rgba(255, 193, 7, 0.8)',
+          'rgba(220, 53, 69, 0.8)',
+          'rgba(23, 162, 184, 0.8)'
+        ],
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom'
         }
+      }
+    }
+  });
+}
+
+// Load profitability data
+async function loadProfitabilityData() {
+  try {
+    const response = await apiCall('/api/reports/profitability', 'GET');
+    
+    if (response.success) {
+      reportsData.profitability = response.data;
+      updateProfitabilityTable();
+    }
+  } catch (error) {
+    showError('Failed to load profitability data');
+  }
+}
+
+// Update profitability table
+function updateProfitabilityTable() {
+  const data = reportsData.profitability;
+  if (!data) return;
+
+  const tbody = document.querySelector('#profitabilityTable tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = '';
+
+  data.forEach(item => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${item.name}</td>
+      <td>${formatCurrency(item.revenue)}</td>
+      <td>${formatCurrency(item.expenses)}</td>
+      <td>${formatCurrency(item.profit)}</td>
+      <td>${item.profitabilityPercentage.toFixed(1)}%</td>
+      <td>${item.count}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+// Load report data
+async function loadReportData() {
+  try {
+    const params = new URLSearchParams({
+      type: currentReportType,
+      period: currentReportPeriod
     });
-}
 
-// Create monthly trends chart
-function createMonthlyTrendsChart(data) {
-    const ctx = document.getElementById('monthlyTrendsChart');
-    if (!ctx) return;
-
-    const chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: data.map(item => item.month),
-            datasets: [
-                {
-                    label: 'Revenue',
-                    data: data.map(item => item.revenue),
-                    borderColor: 'rgba(40, 167, 69, 1)',
-                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                    tension: 0.4
-                },
-                {
-                    label: 'Profit',
-                    data: data.map(item => item.profit),
-                    borderColor: 'rgba(23, 162, 184, 1)',
-                    backgroundColor: 'rgba(23, 162, 184, 0.1)',
-                    tension: 0.4
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return formatCurrency(value);
-                        }
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    position: 'top'
-                }
-            }
-        }
-    });
-}
-
-// Load profitability reports
-async function loadProfitabilityReports() {
-    try {
-        const response = await apiCall('/api/reports/profitability', 'GET');
-        
-        if (response.success) {
-            updateProfitabilityReports(response.data);
-        } else {
-            showError('Failed to load profitability reports');
-        }
-    } catch (error) {
-        console.error('Error loading profitability reports:', error);
-        showError('Error loading profitability reports');
-    }
-}
-
-// Update profitability reports
-function updateProfitabilityReports(data) {
-    // Update profitability by event type
-    updateProfitabilityByType(data.byType || []);
+    const response = await apiCall(`/api/reports/data?${params}`, 'GET');
     
-    // Update profitability by location
-    updateProfitabilityByLocation(data.byLocation || []);
-    
-    // Update profitability by month
-    updateProfitabilityByMonth(data.byMonth || []);
-    
-    // Update top profitable events
-    updateTopProfitableEvents(data.topEvents || []);
+    if (response.success) {
+      reportsData.current = response.data;
+      updateReportDisplay();
+    }
+  } catch (error) {
+    showError('Failed to load report data');
+  }
 }
 
-// Update profitability by type
-function updateProfitabilityByType(data) {
-    const containerEl = document.getElementById('profitabilityByType');
-    if (!containerEl) return;
+// Update report display
+function updateReportDisplay() {
+  const data = reportsData.current;
+  if (!data) return;
 
-    if (data.length === 0) {
-        containerEl.innerHTML = '<p class="text-muted">No data available</p>';
-        return;
-    }
+  const container = document.getElementById('reportDisplay');
+  if (!container) return;
 
-    containerEl.innerHTML = data.map(item => `
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <span>${item.type}</span>
-            <span class="fw-bold ${item.profitability >= 0 ? 'text-success' : 'text-danger'}">
-                ${formatCurrency(item.profitability)}
-            </span>
+  container.innerHTML = `
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">Summary</h5>
+          </div>
+          <div class="card-body">
+            <table class="table table-borderless">
+              <tr><td><strong>Total Revenue:</strong></td><td>${formatCurrency(data.totalRevenue)}</td></tr>
+              <tr><td><strong>Total Expenses:</strong></td><td>${formatCurrency(data.totalExpenses)}</td></tr>
+              <tr><td><strong>Net Profit:</strong></td><td>${formatCurrency(data.netProfit)}</td></tr>
+              <tr><td><strong>Profitability:</strong></td><td>${data.profitabilityPercentage.toFixed(1)}%</td></tr>
+              <tr><td><strong>Total Events:</strong></td><td>${data.totalEvents}</td></tr>
+            </table>
+          </div>
         </div>
-    `).join('');
-}
-
-// Update profitability by location
-function updateProfitabilityByLocation(data) {
-    const containerEl = document.getElementById('profitabilityByLocation');
-    if (!containerEl) return;
-
-    if (data.length === 0) {
-        containerEl.innerHTML = '<p class="text-muted">No data available</p>';
-        return;
-    }
-
-    containerEl.innerHTML = data.map(item => `
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <span>${item.location}</span>
-            <span class="fw-bold ${item.profitability >= 0 ? 'text-success' : 'text-danger'}">
-                ${formatCurrency(item.profitability)}
-            </span>
-        </div>
-    `).join('');
-}
-
-// Update profitability by month
-function updateProfitabilityByMonth(data) {
-    const containerEl = document.getElementById('profitabilityByMonth');
-    if (!containerEl) return;
-
-    if (data.length === 0) {
-        containerEl.innerHTML = '<p class="text-muted">No data available</p>';
-        return;
-    }
-
-    containerEl.innerHTML = data.map(item => `
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <span>${item.month}</span>
-            <span class="fw-bold ${item.profitability >= 0 ? 'text-success' : 'text-danger'}">
-                ${formatCurrency(item.profitability)}
-            </span>
-        </div>
-    `).join('');
-}
-
-// Update top profitable events
-function updateTopProfitableEvents(data) {
-    const containerEl = document.getElementById('topProfitableEvents');
-    if (!containerEl) return;
-
-    if (data.length === 0) {
-        containerEl.innerHTML = '<p class="text-muted">No data available</p>';
-        return;
-    }
-
-    containerEl.innerHTML = data.map((item, index) => `
-        <div class="card mb-2">
-            <div class="card-body p-3">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <h6 class="card-title mb-1">${index + 1}. ${item.name}</h6>
-                        <p class="card-text small text-muted mb-1">
-                            <i class="fas fa-calendar"></i> ${formatDate(item.date)}
-                        </p>
-                        <p class="card-text small text-muted mb-0">
-                            <i class="fas fa-map-marker-alt"></i> ${item.location}
-                        </p>
-                    </div>
-                    <div class="text-end">
-                        <div class="fw-bold ${item.profitability >= 0 ? 'text-success' : 'text-danger'}">
-                            ${formatCurrency(item.profitability)}
-                        </div>
-                        <small class="text-muted">
-                            ${item.profitabilityPercentage.toFixed(1)}%
-                        </small>
-                    </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">Top Performing Events</h5>
+          </div>
+          <div class="card-body">
+            ${data.topEvents ? data.topEvents.map(event => `
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                  <strong>${event.name}</strong><br>
+                  <small class="text-muted">${event.type} - ${formatDate(event.date)}</small>
                 </div>
-            </div>
+                <div class="text-end">
+                  <div class="fw-bold text-success">${formatCurrency(event.profit)}</div>
+                  <small class="text-muted">${event.profitabilityPercentage.toFixed(1)}%</small>
+                </div>
+              </div>
+            `).join('') : '<p class="text-muted">No data available</p>'}
+          </div>
         </div>
-    `).join('');
+      </div>
+    </div>
+  `;
 }
 
 // Generate monthly report
 async function generateMonthlyReport() {
-    try {
-        showLoading();
-        
-        const response = await apiCall('/api/reports/monthly', 'POST', {
-            month: new Date().getMonth() + 1,
-            year: new Date().getFullYear(),
-            sendEmail: true,
-            sendWhatsApp: true
-        });
-        
-        if (response.success) {
-            showSuccess('Monthly report generated and sent successfully');
-            
-            // Download the report
-            if (response.data.reportUrl) {
-                const link = document.createElement('a');
-                link.href = response.data.reportUrl;
-                link.download = `monthly-report-${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}.pdf`;
-                link.click();
-            }
-        } else {
-            showError('Failed to generate monthly report');
-        }
-    } catch (error) {
-        console.error('Error generating monthly report:', error);
-        showError('Error generating monthly report');
-    } finally {
-        hideLoading();
-    }
-}
-
-// Generate custom report
-async function generateCustomReport() {
-    const startDate = document.getElementById('reportStartDate').value;
-    const endDate = document.getElementById('reportEndDate').value;
-    const reportType = document.getElementById('reportType').value;
+  try {
+    showLoading();
     
-    if (!startDate || !endDate) {
-        showError('Please select start and end dates');
-        return;
-    }
+    const response = await apiCall('/api/reports/monthly', 'POST', {
+      month: currentReportPeriod,
+      sendEmail: true,
+      sendWhatsApp: true
+    });
     
-    try {
-        showLoading();
-        
-        const response = await apiCall('/api/reports/custom', 'POST', {
-            startDate,
-            endDate,
-            reportType,
-            includeCharts: true,
-            includeDetails: true
-        });
-        
-        if (response.success) {
-            showSuccess('Custom report generated successfully');
-            
-            // Download the report
-            if (response.data.reportUrl) {
-                const link = document.createElement('a');
-                link.href = response.data.reportUrl;
-                link.download = `custom-report-${startDate}-to-${endDate}.pdf`;
-                link.click();
-            }
-        } else {
-            showError('Failed to generate custom report');
-        }
-    } catch (error) {
-        console.error('Error generating custom report:', error);
-        showError('Error generating custom report');
-    } finally {
-        hideLoading();
+    if (response.success) {
+      showSuccess('Monthly report generated and sent successfully');
+      
+      // Download the report
+      if (response.data.reportUrl) {
+        const link = document.createElement('a');
+        link.href = response.data.reportUrl;
+        link.download = `monthly-report-${currentReportPeriod}.pdf`;
+        link.click();
+      }
     }
+  } catch (error) {
+    showError('Failed to generate monthly report');
+  } finally {
+    hideLoading();
+  }
 }
 
-// Export data to Excel
-async function exportDataToExcel() {
-    const dataType = document.getElementById('exportDataType').value;
+// Export report data
+function exportReportData() {
+  const data = reportsData.current;
+  if (!data) {
+    showError('No report data to export');
+    return;
+  }
+
+  // Create CSV content
+  let csvContent = 'data:text/csv;charset=utf-8,';
+  
+  // Add headers
+  csvContent += 'Event Name,Type,Date,Revenue,Expenses,Profit,Profitability%\n';
+  
+  // Add data
+  if (data.events) {
+    data.events.forEach(event => {
+      csvContent += `"${event.name}","${event.type}","${event.date}","${event.revenue}","${event.expenses}","${event.profit}","${event.profitabilityPercentage}"\n`;
+    });
+  }
+  
+  // Download file
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement('a');
+  link.setAttribute('href', encodedUri);
+  link.setAttribute('download', `report-${currentReportType}-${currentReportPeriod}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  showSuccess('Report exported successfully');
+}
+
+// Clear report filters
+function clearReportFilters() {
+  currentReportType = 'monthly';
+  currentReportPeriod = new Date().toISOString().slice(0, 7);
+  
+  const form = document.getElementById('reportFilters');
+  if (form) {
+    form.reset();
+  }
+  
+  loadReportData();
+}
+
+// Load outstanding balances
+async function loadOutstandingBalances() {
+  try {
+    const response = await apiCall('/api/reports/outstanding-balances', 'GET');
     
-    try {
-        showLoading();
+    if (response.success) {
+      const container = document.getElementById('outstandingBalancesList');
+      if (container) {
+        container.innerHTML = '';
         
-        const response = await apiCall('/api/reports/export', 'POST', {
-            dataType,
-            format: 'excel'
+        response.data.forEach(balance => {
+          const item = document.createElement('div');
+          item.className = 'alert alert-warning d-flex justify-content-between align-items-center';
+          item.innerHTML = `
+            <div>
+              <strong>${balance.eventName}</strong><br>
+              <small>Due: ${formatDate(balance.dueDate)}</small>
+            </div>
+            <div class="text-end">
+              <div class="fw-bold">${formatCurrency(balance.amount)}</div>
+              <small class="text-muted">${balance.daysOverdue} days overdue</small>
+            </div>
+          `;
+          container.appendChild(item);
         });
-        
-        if (response.success) {
-            showSuccess('Data exported successfully');
-            
-            // Download the file
-            if (response.data.fileUrl) {
-                const link = document.createElement('a');
-                link.href = response.data.fileUrl;
-                link.download = `${dataType}-export-${new Date().toISOString().split('T')[0]}.xlsx`;
-                link.click();
-            }
-        } else {
-            showError('Failed to export data');
-        }
-    } catch (error) {
-        console.error('Error exporting data:', error);
-        showError('Error exporting data');
-    } finally {
-        hideLoading();
+      }
     }
+  } catch (error) {
+    console.error('Failed to load outstanding balances:', error);
+  }
 }
 
-// Setup event listeners
-function setupEventListeners() {
-    // Generate monthly report button
-    const generateMonthlyBtn = document.getElementById('generateMonthlyReport');
-    if (generateMonthlyBtn) {
-        generateMonthlyBtn.addEventListener('click', generateMonthlyReport);
-    }
-
-    // Generate custom report form
-    const customReportForm = document.getElementById('customReportForm');
-    if (customReportForm) {
-        customReportForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            generateCustomReport();
-        });
-    }
-
-    // Export data button
-    const exportDataBtn = document.getElementById('exportData');
-    if (exportDataBtn) {
-        exportDataBtn.addEventListener('click', exportDataToExcel);
-    }
-
-    // Refresh dashboard button
-    const refreshDashboardBtn = document.getElementById('refreshDashboard');
-    if (refreshDashboardBtn) {
-        refreshDashboardBtn.addEventListener('click', loadDashboardStats);
-    }
+// Animate numbers
+function animateNumbers() {
+  const elements = document.querySelectorAll('.animate-number');
+  elements.forEach(element => {
+    const finalValue = parseFloat(element.textContent.replace(/[^\d.-]/g, ''));
+    const isCurrency = element.textContent.includes('₪') || element.textContent.includes('$');
+    
+    animateNumber(element, 0, finalValue, isCurrency);
+  });
 }
 
-// Utility functions
-function getEventStatusBadgeClass(status) {
-    const classes = {
-        'upcoming': 'bg-primary',
-        'ongoing': 'bg-success',
-        'completed': 'bg-secondary',
-        'cancelled': 'bg-danger'
-    };
-    return classes[status] || 'bg-secondary';
+function animateNumber(element, start, end, isCurrency) {
+  const duration = 1000;
+  const startTime = performance.now();
+  
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    
+    const current = start + (end - start) * progress;
+    element.textContent = isCurrency ? formatCurrency(current) : Math.round(current);
+    
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    }
+  }
+  
+  requestAnimationFrame(update);
 }
 
-// Export functions for global access
-window.loadReports = loadReports;
-window.generateMonthlyReport = generateMonthlyReport;
-window.generateCustomReport = generateCustomReport;
-window.exportDataToExcel = exportDataToExcel;
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', () => {
+  if (document.getElementById('reportsPage')) {
+    loadReports();
+    loadOutstandingBalances();
+  }
+});
