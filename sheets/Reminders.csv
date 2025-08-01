@@ -1,0 +1,7 @@
+ReminderID,Title,Description,EventID,ReminderDate,ReminderTime,Assignee,Status,IsRecurring,RecurrencePattern,Priority,CreatedDate,CompletedDate,Notes
+1,Turn off generator,Turn off generator after event completion,1,2024-03-15,23:30,Mohammed Ali,Pending,No,,High,2024-01-15,,Critical for safety
+2,Final payment reminder,Contact client for final payment,1,2024-03-10,10:00,Office Manager,Pending,No,,Medium,2024-01-15,,₪10,500 outstanding
+3,Setup decoration,Setup standard decoration 2 hours before event,1,2024-03-15,16:00,Decoration Team,Pending,No,,High,2024-01-15,,Wedding decoration
+4,Monthly report generation,Generate and send monthly reports,0,2024-02-01,09:00,Manager,Completed,Yes,Monthly,Low,2024-01-01,2024-02-01,Automated via Zapier
+5,Check sound system,Test all audio equipment before graduation party,2,2024-03-20,14:00,Technical Team,Pending,No,,High,2024-01-16,,Garden setup requires extension cables
+6,Cleanup reminder,Post-event cleanup and inspection,2,2024-03-20,21:00,Cleaning Team,Pending,No,,Medium,2024-01-16,,Standard cleanup protocol
