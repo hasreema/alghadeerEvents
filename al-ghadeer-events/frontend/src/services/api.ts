@@ -1,8 +1,11 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
-import { getSession, signOut } from 'next-auth/react';
 
 // API base URL from environment variable
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
+// Token storage keys
+const ACCESS_TOKEN_KEY = 'access_token';
+const REFRESH_TOKEN_KEY = 'refresh_token';
 
 // Create axios instance with default config
 const api: AxiosInstance = axios.create({
@@ -13,14 +16,37 @@ const api: AxiosInstance = axios.create({
   },
 });
 
+// Helper functions for token management
+export const getAccessToken = (): string | null => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem(ACCESS_TOKEN_KEY);
+  }
+  return null;
+};
+
+export const setTokens = (accessToken: string, refreshToken?: string) => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+    if (refreshToken) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+    }
+  }
+};
+
+export const clearTokens = () => {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+  }
+};
+
 // Request interceptor to add auth token
 api.interceptors.request.use(
-  async (config) => {
-    // Get the auth token from session
-    const session = await getSession();
+  (config) => {
+    const token = getAccessToken();
     
-    if (session?.accessToken) {
-      config.headers.Authorization = `Bearer ${session.accessToken}`;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     
     return config;
@@ -40,20 +66,10 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       
-      // Try to refresh token
-      try {
-        const session = await getSession();
-        if (session?.refreshToken) {
-          // TODO: Implement token refresh logic
-          // const newToken = await refreshAccessToken(session.refreshToken);
-          // if (newToken) {
-          //   originalRequest.headers.Authorization = `Bearer ${newToken}`;
-          //   return api(originalRequest);
-          // }
-        }
-      } catch (refreshError) {
-        // Refresh failed, sign out user
-        await signOut({ redirect: true, callbackUrl: '/login' });
+      // Clear tokens and redirect to login
+      clearTokens();
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
       }
     }
     
