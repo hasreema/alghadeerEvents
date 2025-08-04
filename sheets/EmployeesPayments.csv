@@ -1,7 +1,0 @@
-EmployeePaymentID,EventID,EmployeeName,Role,WagePerHour,HoursWorked,TotalWage,PaymentDate,PaymentStatus,Notes,CreatedDate
-1,1,Mohammed Ali,Waiter,50,6,300,2024-03-16,Paid,Worked evening shift,2024-01-15
-2,1,Fatima Hassan,Chef,80,8,640,2024-03-16,Paid,Head chef for wedding,2024-01-15
-3,1,Omar Khalil,Security,60,7,420,2024-03-16,Paid,Security supervisor,2024-01-15
-4,1,Layla Ahmed,Cleaner,40,4,160,2024-03-16,Paid,Post-event cleanup,2024-01-15
-5,2,Mohammed Ali,Waiter,50,4,200,2024-03-21,Pending,Graduation party service,2024-01-16
-6,2,Nour Salim,DJ,100,4,400,2024-03-21,Pending,Sound and music for graduation,2024-01-16

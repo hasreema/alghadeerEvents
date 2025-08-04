@@ -1,6 +1,0 @@
-ContactID,EventID,ContactType,FirstName,LastName,Phone,Email,WhatsApp,Address,Notes,PreferredLanguage,CreatedDate
-1,1,Primary Client,Sarah,Mansour,+970591234567,sarah.mansour@email.com,+970591234567,Ramallah - Al Masyoun,Bride contact,Arabic,2024-01-15
-2,1,Secondary Client,Ahmad,Khalil,+970599876543,ahmad.khalil@email.com,+970599876543,Ramallah - Downtown,Groom contact,Arabic,2024-01-15
-3,1,Emergency Contact,Fatima,Mansour,+970597654321,fatima.mansour@email.com,+970597654321,Ramallah - Al Masyoun,Mother of bride,Arabic,2024-01-15
-4,2,Primary Client,Layla,Ahmed,+970594567890,layla.ahmed@email.com,+970594567890,Nablus - Old City,Graduate,English,2024-01-16
-5,2,Secondary Contact,Omar,Ahmed,+970593456789,omar.ahmed@email.com,+970593456789,Nablus - Old City,Father,Arabic,2024-01-16
