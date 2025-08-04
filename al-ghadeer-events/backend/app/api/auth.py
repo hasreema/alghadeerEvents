@@ -2,7 +2,6 @@ from datetime import timedelta
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer
-from pydantic import EmailStr
 
 from app.core.config import settings
 from app.core.security import (
@@ -16,7 +15,6 @@ from app.core.dependencies import get_current_user
 from app.models.user import User
 from app.api.schemas import (
     UserCreate,
-    UserUpdate,
     UserResponse,
     LoginRequest,
     TokenResponse,
@@ -194,3 +192,8 @@ async def verify_token(
 ):
     """Verify if token is valid and return user data."""
     return current_user
+
+
+# Import UserUpdate here to avoid circular import
+from app.api.schemas import UserUpdate
+from pydantic import EmailStr
