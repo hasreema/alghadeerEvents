@@ -1,4 +1,0 @@
-PaymentID,EventID,PaymentDate,AmountPaid,PaymentMethod,ReceiptUploaded,ReceiptURL,Notes,TotalEventCost,OutstandingBalance,CreatedDate
-1,1,2024-01-20,5000,Cash,Yes,receipts/payment_1_20240120.pdf,Initial deposit,18500,13500,2024-01-20
-2,1,2024-02-15,3000,Bank Transfer,Yes,receipts/payment_1_20240215.pdf,Second installment,18500,10500,2024-02-15
-3,2,0,0,Not Paid,No,,No payments yet,9200,9200,2024-01-16

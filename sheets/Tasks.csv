@@ -1,7 +1,0 @@
-TaskID,Title,Description,AssignedTo,Priority,Status,DueDate,EventID,Category,CreatedDate,CompletedDate,Notes
-1,Kitchen preparation,Prepare kitchen and cooking equipment,Fatima Hassan,High,In Progress,2024-03-15,1,Operations,2024-01-15,,Wedding catering prep
-2,Sound system setup,Install and test sound system in garden,Technical Team,High,Pending,2024-03-20,2,Technical,2024-01-16,,Requires extension cables for garden
-3,Table arrangement,Arrange tables and chairs for 200 guests,Setup Team,Medium,Pending,2024-03-15,1,Setup,2024-01-15,,Hall Floor 0 layout
-4,Parking coordination,Coordinate parking for wedding guests,Security Team,Medium,Pending,2024-03-15,1,Logistics,2024-01-15,,Expected 80 cars
-5,Final inspection,Final venue inspection before graduation party,Manager,High,Pending,2024-03-20,2,Quality Control,2024-01-16,,Complete walkthrough needed
-6,Invoice generation,Generate final invoice for graduation event,Accounting,Low,Pending,2024-03-18,2,Finance,2024-01-16,,Include all additional services
