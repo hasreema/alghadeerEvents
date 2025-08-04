@@ -1,0 +1,102 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: alghadeer_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: alghadeer2024
+      MONGO_INITDB_DATABASE: al_ghadeer_events
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - alghadeer_network
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: alghadeer_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URL=mongodb://admin:alghadeer2024@mongodb:27017/al_ghadeer_events?authSource=admin
+      - SECRET_KEY=your-secret-key-here-change-in-production
+      - DEBUG=True
+    volumes:
+      - ./backend:/app
+      - backend_reports:/app/reports
+      - backend_uploads:/app/uploads
+    depends_on:
+      - mongodb
+    networks:
+      - alghadeer_network
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: alghadeer_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NODE_ENV=development
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend
+    networks:
+      - alghadeer_network
+    command: npm run dev
+
+  # Redis (for caching - optional)
+  redis:
+    image: redis:7-alpine
+    container_name: alghadeer_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - alghadeer_network
+
+  # Nginx (optional - for production)
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: alghadeer_nginx
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+  #     - ./nginx/ssl:/etc/nginx/ssl
+  #   depends_on:
+  #     - backend
+  #     - frontend
+  #   networks:
+  #     - alghadeer_network
+
+volumes:
+  mongodb_data:
+  redis_data:
+  backend_reports:
+  backend_uploads:
+
+networks:
+  alghadeer_network:
+    driver: bridge
