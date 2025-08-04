@@ -1,0 +1,54 @@
+# FastAPI Backend Dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+motor==3.3.2
+beanie==1.24.0
+pymongo==4.6.0
+
+# Authentication & Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+
+# Google APIs & Integrations
+google-api-python-client==2.108.0
+google-auth-httplib2==0.1.1
+google-auth-oauthlib==1.1.0
+google-cloud-storage==2.10.0
+
+# Notifications & Communication
+emails==0.6.0
+python-telegram-bot==20.7
+twilio==8.11.0
+requests==2.31.0
+
+# PDF Generation & Reports
+reportlab==4.0.7
+Pillow==10.1.0
+matplotlib==3.8.2
+
+# Date & Time
+python-dateutil==2.8.2
+
+# Environment & Configuration
+python-dotenv==1.0.0
+
+# Development & Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2
+
+# CORS
+fastapi-cors==0.0.6
+
+# File handling
+aiofiles==23.2.1
+
+# Hebrew/Arabic PDF support
+bidi==0.4.2
+arabic-reshaper==3.0.0
+
+# Validation
+email-validator==2.1.0
