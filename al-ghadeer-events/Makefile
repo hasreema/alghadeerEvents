@@ -49,13 +49,28 @@ dev:
 	@echo "MongoDB Express: http://localhost:8081 (admin/admin123)"
 	@echo "Redis Commander: http://localhost:8082"
 
+.PHONY: dev-ubuntu
+dev-ubuntu:
+	docker-compose -f docker-compose.dev.ubuntu.yml up -d
+	@echo "Development environment (Ubuntu-based) started!"
+	@echo "Frontend: http://localhost:3000"
+	@echo "Backend API: http://localhost:8000"
+	@echo "API Docs: http://localhost:8000/docs"
+	@echo "MongoDB Express: http://localhost:8081 (admin/admin123)"
+	@echo "Redis Commander: http://localhost:8082"
+
 .PHONY: dev-build
 dev-build:
 	docker-compose -f docker-compose.dev.yml build
 
+.PHONY: dev-build-ubuntu
+dev-build-ubuntu:
+	docker-compose -f docker-compose.dev.ubuntu.yml build
+
 .PHONY: dev-down
 dev-down:
 	docker-compose -f docker-compose.dev.yml down
+	docker-compose -f docker-compose.dev.ubuntu.yml down
 
 .PHONY: dev-logs
 dev-logs:
