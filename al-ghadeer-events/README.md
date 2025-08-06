@@ -79,6 +79,66 @@ npm run dev
 
 Access the application at `http://localhost:3000`
 
+## 🐳 Docker Quick Start
+
+The easiest way to run the system:
+
+```bash
+# Run the startup script
+./start.sh
+
+# Or use the Makefile
+make setup  # First time only
+make dev    # Start development environment
+```
+
+## 🔧 Troubleshooting
+
+### SSL Certificate Issues
+
+If you encounter SSL certificate errors during npm install:
+
+```bash
+# Run the SSL fix script
+./fix-ssl.sh
+
+# Then try again
+./start.sh
+```
+
+This is common in corporate environments or behind proxies. The fix script will:
+- Configure npm to handle SSL issues
+- Set up proxy settings if detected
+- Create necessary override files
+
+If you're behind a corporate proxy, you may need to:
+1. Set your proxy environment variables:
+   ```bash
+   export HTTP_PROXY=http://your-proxy:port
+   export HTTPS_PROXY=http://your-proxy:port
+   ```
+2. Edit `docker-compose.override.yml` with your proxy settings
+
+### Port Conflicts
+
+If ports are already in use:
+```bash
+# Check what's using the ports
+lsof -i :3000  # Frontend
+lsof -i :8000  # Backend
+lsof -i :27017 # MongoDB
+
+# Change ports in docker-compose.yml if needed
+```
+
+### Container Build Issues
+
+```bash
+# Clean and rebuild
+make clean
+make dev-build
+```
+
 ## 📂 Project Structure
 
 ```

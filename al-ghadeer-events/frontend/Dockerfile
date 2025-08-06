@@ -2,12 +2,24 @@
 
 # Stage 1: Dependencies
 FROM node:18-alpine AS deps
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat ca-certificates
 WORKDIR /app
+
+# Update CA certificates
+RUN update-ca-certificates
 
 # Copy package files
 COPY package.json package-lock.json* ./
-RUN npm ci
+
+# Configure npm to handle SSL issues (temporary workaround)
+RUN npm config set strict-ssl false && \
+    npm config set registry https://registry.npmjs.org/
+
+# Install dependencies
+RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+
+# Reset npm SSL settings
+RUN npm config set strict-ssl true
 
 # Stage 2: Builder
 FROM node:18-alpine AS builder
