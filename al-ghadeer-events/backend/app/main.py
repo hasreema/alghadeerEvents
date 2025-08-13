@@ -11,14 +11,14 @@ from app.core.database import connect_to_mongo, close_mongo_connection, init_db
 
 # Import routers
 from app.api.auth import router as auth_router
-# from app.api.events import router as events_router
-# from app.api.payments import router as payments_router
-# from app.api.employees import router as employees_router
-# from app.api.tasks import router as tasks_router
-# from app.api.reminders import router as reminders_router
-# from app.api.expenses import router as expenses_router
-# from app.api.reports import router as reports_router
-# from app.api.notifications import router as notifications_router
+from app.api.events import router as events_router
+from app.api.payments import router as payments_router
+from app.api.employees import router as employees_router
+from app.api.tasks import router as tasks_router
+from app.api.reminders import router as reminders_router
+from app.api.expenses import router as expenses_router
+from app.api.reports import router as reports_router
+from app.api.notifications import router as notifications_router
 # from app.api.google_sheets import router as google_sheets_router
 
 # Configure logging
@@ -127,14 +127,14 @@ async def health_check():
 
 # Include routers
 app.include_router(auth_router, prefix="/api/auth", tags=["Authentication"])
-# app.include_router(events_router, prefix="/api/events", tags=["Events"])
-# app.include_router(payments_router, prefix="/api/payments", tags=["Payments"])
-# app.include_router(employees_router, prefix="/api/employees", tags=["Employees"])
-# app.include_router(tasks_router, prefix="/api/tasks", tags=["Tasks"])
-# app.include_router(reminders_router, prefix="/api/reminders", tags=["Reminders"])
-# app.include_router(expenses_router, prefix="/api/expenses", tags=["Expenses"])
-# app.include_router(reports_router, prefix="/api/reports", tags=["Reports"])
-# app.include_router(notifications_router, prefix="/api/notifications", tags=["Notifications"])
+app.include_router(events_router, prefix="/api/events", tags=["Events"])
+app.include_router(payments_router, prefix="/api/payments", tags=["Payments"])
+app.include_router(employees_router, prefix="/api/employees", tags=["Employees"])
+app.include_router(tasks_router, prefix="/api/tasks", tags=["Tasks"])
+app.include_router(reminders_router, prefix="/api/reminders", tags=["Reminders"])
+app.include_router(expenses_router, prefix="/api/expenses", tags=["Expenses"])
+app.include_router(reports_router, prefix="/api/reports", tags=["Reports"])
+app.include_router(notifications_router, prefix="/api/notifications", tags=["Notifications"])
 # app.include_router(google_sheets_router, prefix="/api/google-sheets", tags=["Google Sheets"])
 
 # Exception handlers
