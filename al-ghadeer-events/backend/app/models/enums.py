@@ -24,3 +24,7 @@ class TaskPriority(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     URGENT = "urgent"
+
+class CompensationType(str, Enum):
+    HOURLY = "hourly"
+    ROLE = "role"

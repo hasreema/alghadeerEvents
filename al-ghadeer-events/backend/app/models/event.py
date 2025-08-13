@@ -17,6 +17,12 @@ class EventPricing(BaseModel):
     taxes: float = 0
     total_price: float = 0
 
+class EventEmployeeAssignment(BaseModel):
+    employee_id: str
+    role: Optional[str] = None
+    hours: Optional[float] = None
+    cost: Optional[float] = None
+
 class Event(Document):
     event_name: str
     event_type: str
@@ -44,6 +50,7 @@ class Event(Document):
     deposit_paid: bool = False
 
     assigned_employees: List[str] = []
+    assignments: List[EventEmployeeAssignment] = []
     labor_cost: float = 0
 
     total_revenue: float = 0
