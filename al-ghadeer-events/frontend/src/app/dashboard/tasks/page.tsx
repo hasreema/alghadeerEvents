@@ -28,6 +28,8 @@ export default function TasksListPage() {
     setFilters({ status: status as any, priority: priority as any, event_id: eventId, overdue });
   };
 
+  const rows = Array.isArray(tasks) ? tasks : [];
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col md:flex-row gap-2">
@@ -79,7 +81,7 @@ export default function TasksListPage() {
             </tr>
           </thead>
           <tbody>
-            {tasks.map((t) => (
+            {rows.map((t) => (
               <tr key={t.id} className="border-t">
                 <td className="px-4 py-2">
                   <a className="text-primary underline" href={`/dashboard/tasks/${t.id}`}>{t.title}</a>
@@ -97,7 +99,7 @@ export default function TasksListPage() {
                 <td className="px-4 py-2">{t.assigned_to_name || '-'}</td>
               </tr>
             ))}
-            {tasks.length === 0 && !loading && (
+            {rows.length === 0 && !loading && (
               <tr>
                 <td colSpan={6} className="px-4 py-6 text-center text-gray-500">No tasks found</td>
               </tr>
@@ -111,7 +113,7 @@ export default function TasksListPage() {
         <div className="flex items-center gap-2">
           <button className="px-3 py-1 border rounded disabled:opacity-50" onClick={() => setPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1}>Prev</button>
           <span>Page {currentPage}</span>
-          <button className="px-3 py-1 border rounded disabled:opacity-50" onClick={() => setPage(currentPage + 1)} disabled={tasks.length < pageSize}>Next</button>
+          <button className="px-3 py-1 border rounded disabled:opacity-50" onClick={() => setPage(currentPage + 1)} disabled={rows.length < pageSize}>Next</button>
         </div>
       </div>
     </div>

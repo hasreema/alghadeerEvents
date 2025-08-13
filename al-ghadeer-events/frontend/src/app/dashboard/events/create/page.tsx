@@ -1,14 +1,16 @@
 "use client";
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import useEventStore from '../../../../store/useEventStore';
 
 export default function EventCreatePage() {
   const router = useRouter();
+  const search = useSearchParams();
+  const dateFromQuery = search?.get('date') || '';
   const { createEvent, loading } = useEventStore();
 
-  const [event_name, setEventName] = useState('');
+  const [event_name, setEventName] = useState('New Event');
   const [event_type, setEventType] = useState('Wedding');
   const [location, setLocation] = useState('Hall Floor 0');
   const [event_date, setEventDate] = useState('');
@@ -17,6 +19,15 @@ export default function EventCreatePage() {
   const [expected_guests, setExpectedGuests] = useState(100);
   const [guest_gender, setGuestGender] = useState('mixed');
   const [deposit_amount, setDepositAmount] = useState(0);
+
+  useEffect(() => {
+    if (dateFromQuery && !event_date) {
+      try {
+        const d = new Date(dateFromQuery);
+        if (!isNaN(d.getTime())) setEventDate(d.toISOString().slice(0, 16));
+      } catch {}
+    }
+  }, [dateFromQuery, event_date]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +51,9 @@ export default function EventCreatePage() {
         total_price: 0,
       },
       deposit_amount,
+      decoration_type: 'standard',
+      menu_selections: {},
+      dietary_restrictions: [],
     };
 
     const created = await createEvent(payload);

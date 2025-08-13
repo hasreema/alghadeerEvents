@@ -43,7 +43,9 @@ const useTaskStore = create<TaskState>()(
             page: get().currentPage,
             page_size: get().pageSize,
           });
-          set({ tasks: response.items, totalTasks: response.total, loading: false });
+          const items = (response as any)?.items ?? (response as any)?.data ?? [];
+          const total = (response as any)?.total ?? (Array.isArray(items) ? items.length : 0);
+          set({ tasks: items as any, totalTasks: total, loading: false });
         } catch (error: any) {
           set({ error: error.message || 'Failed to fetch tasks', loading: false });
         }
