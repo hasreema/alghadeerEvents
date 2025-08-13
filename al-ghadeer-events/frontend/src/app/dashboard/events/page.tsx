@@ -82,7 +82,7 @@ export default function EventsListPage() {
             </tr>
           </thead>
           <tbody>
-            {events.map((e) => (
+            {(events || []).map((e) => (
               <tr key={e.id} className="border-t">
                 <td className="px-4 py-2">
                   <a className="text-primary underline" href={`/dashboard/events/${e.id}`}>{e.event_name}</a>

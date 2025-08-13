@@ -62,9 +62,11 @@ const useEventStore = create<EventState>()(
             page: get().currentPage,
             page_size: get().pageSize,
           });
+          const items = (response as any)?.items ?? (response as any)?.data ?? [];
+          const total = (response as any)?.total ?? (Array.isArray(items) ? items.length : 0);
           set({
-            events: response.items,
-            totalEvents: response.total,
+            events: items as any,
+            totalEvents: total,
             loading: false,
           });
         } catch (error: any) {
