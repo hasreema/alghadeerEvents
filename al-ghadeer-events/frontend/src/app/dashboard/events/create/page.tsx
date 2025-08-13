@@ -50,7 +50,7 @@ export default function EventCreatePage() {
   const [phoneNumbers, setPhoneNumbers] = useState<string[]>(['']);
 
   // Pricing / Deposits (ILS)
-  const [base_price, setBasePrice] = useState(0);
+  // base price removed per requirements
   const [deposit_total, setDepositTotal] = useState(0);
   const [paid_deposit_amount, setPaidDepositAmount] = useState(0);
 
@@ -159,11 +159,11 @@ export default function EventCreatePage() {
       menu_selections: {},
       dietary_restrictions: [],
       pricing: {
-        base_price: base_price || 0,
+        base_price: 0,
         additional_services,
         discounts: 0,
         taxes: 0,
-        total_price: (base_price || 0) + Object.values(additional_services).reduce((a, b) => a + b, 0),
+                 total_price: Object.values(additional_services).reduce((a, b) => a + b, 0),
       },
       deposit_amount: deposit_total || 0,
       internal_notes: perLocationLines.join(' | '),
@@ -279,11 +279,7 @@ export default function EventCreatePage() {
           </div>
         </div>
 
-        {/* Pricing / Deposits */}
-        <div>
-          <label className="block text-sm mb-1">Base Price (₪)</label>
-          <input type="number" className="border rounded px-3 py-2 w-full" value={base_price} onChange={(e) => setBasePrice(parseFloat(e.target.value || '0'))} />
-        </div>
+        {/* Deposits */}
         <div>
           <label className="block text-sm mb-1">Total Deposit (₪)</label>
           <input type="number" className="border rounded px-3 py-2 w-full" value={deposit_total} onChange={(e) => setDepositTotal(parseFloat(e.target.value || '0'))} />
