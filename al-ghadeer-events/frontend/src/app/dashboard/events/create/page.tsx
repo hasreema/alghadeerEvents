@@ -61,6 +61,20 @@ export default function EventCreatePage() {
   // Description
   const [description, setDescription] = useState('');
 
+  // Expected guests per location or total fallback
+  const [expectedGuestsTotal, setExpectedGuestsTotal] = useState(100);
+  const [expectedGuestsByLocation, setExpectedGuestsByLocation] = useState<Record<string, number>>({});
+  const perLocationKeys = useMemo(
+    () => [...selectedLocations, ...(customLocation ? [customLocation] : [])],
+    [selectedLocations, customLocation]
+  );
+  const setGuestsForLocation = (loc: string, val: number) =>
+    setExpectedGuestsByLocation((prev) => ({ ...prev, [loc]: val }));
+  const perLocationTotal = useMemo(
+    () => perLocationKeys.reduce((sum, loc) => sum + (expectedGuestsByLocation[loc] || 0), 0),
+    [perLocationKeys, expectedGuestsByLocation]
+  );
+
   const allRequests = useMemo(() => [...requests, ...customRequests], [requests, customRequests]);
 
   useEffect(() => {
@@ -120,6 +134,12 @@ export default function EventCreatePage() {
 
     const locationStr = [...selectedLocations, customLocation].filter(Boolean).join(', ');
 
+    const expectedGuests = perLocationKeys.length > 0 ? perLocationTotal : expectedGuestsTotal;
+
+    const perLocationLines = perLocationKeys.length
+      ? [`Guests per location: ${perLocationKeys.map((loc) => `${loc}: ${expectedGuestsByLocation[loc] || 0}`).join('; ')}`]
+      : [];
+
     const payload: any = {
       event_name,
       event_type,
@@ -128,7 +148,7 @@ export default function EventCreatePage() {
       event_date: new Date(event_date).toISOString(),
       start_time,
       end_time,
-      expected_guests,
+      expected_guests: expectedGuests,
       guest_gender,
       contacts: phoneNumbers
         .filter((p) => p && p.trim())
@@ -146,6 +166,7 @@ export default function EventCreatePage() {
         total_price: (base_price || 0) + Object.values(additional_services).reduce((a, b) => a + b, 0),
       },
       deposit_amount: deposit_total || 0,
+      internal_notes: perLocationLines.join(' | '),
     };
 
     const created = await createEvent(payload);
@@ -203,10 +224,36 @@ export default function EventCreatePage() {
         </div>
 
         {/* Guests & Gender */}
-        <div>
-          <label className="block text-sm mb-1">Expected Guests</label>
-          <input type="number" className="border rounded px-3 py-2 w-full" value={expected_guests} onChange={(e) => setExpectedGuests(parseInt(e.target.value || '0', 10))} required />
-        </div>
+        {perLocationKeys.length > 0 ? (
+          <div className="md:col-span-2">
+            <label className="block text-sm mb-1">Expected Guests per Location</label>
+            <div className="grid gap-2">
+              {perLocationKeys.map((loc) => (
+                <div key={loc} className="flex items-center gap-2">
+                  <span className="text-sm text-gray-700 w-40 truncate" title={loc}>{loc}</span>
+                  <input
+                    type="number"
+                    className="border rounded px-3 py-2 w-full"
+                    value={expectedGuestsByLocation[loc] || 0}
+                    onChange={(e) => setGuestsForLocation(loc, parseInt(e.target.value || '0', 10))}
+                  />
+                </div>
+              ))}
+            </div>
+            <p className="text-sm text-gray-600 mt-2">Total Expected Guests: {perLocationTotal}</p>
+          </div>
+        ) : (
+          <div>
+            <label className="block text-sm mb-1">Expected Guests (Total)</label>
+            <input
+              type="number"
+              className="border rounded px-3 py-2 w-full"
+              value={expectedGuestsTotal}
+              onChange={(e) => setExpectedGuestsTotal(parseInt(e.target.value || '0', 10))}
+              required
+            />
+          </div>
+        )}
         <div>
           <label className="block text-sm mb-1">Gender</label>
           <select className="border rounded px-3 py-2 w-full" value={guest_gender} onChange={(e) => setGuestGender(e.target.value)}>
