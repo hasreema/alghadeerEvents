@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import eventService, { Event, EventsListParams, EventStats } from '../services/events/eventService';
+import eventService, { Event, EventsListParams, EventStatsOverview } from '../services/events/eventService';
 import { getAccessToken } from '../services/api';
 
 interface EventState {
   // State
   events: Event[];
   selectedEvent: Event | null;
-  stats: EventStats | null;
+  stats: EventStatsOverview | null;
   loading: boolean;
   loadingStats: boolean;
   error: string | null;
@@ -60,10 +60,10 @@ const useEventStore = create<EventState>()(
             ...get().filters,
             ...params,
             page: get().currentPage,
-            limit: get().pageSize,
+            page_size: get().pageSize,
           });
           set({
-            events: response.data,
+            events: response.items,
             totalEvents: response.total,
             loading: false,
           });

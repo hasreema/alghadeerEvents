@@ -16,8 +16,8 @@ import {
   Menu,
   X
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import useAuthStore from '@/store/auth.store';
+import { cn } from '../../lib/utils';
+import useAuthStore from '../../store/auth.store';
 import { useState } from 'react';
 
 const navigation = [

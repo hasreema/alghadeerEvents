@@ -1,48 +1,49 @@
 import api from '../api';
 import { io, Socket } from 'socket.io-client';
-
-export interface EventPricing {
-  base_price: number;
-  extras_price: number;
-  discount_amount: number;
-  discount_percentage: number;
-  final_price: number;
-  notes?: string;
-}
+import { WS_URL } from '../../config';
 
 export interface EventContact {
   name: string;
   phone: string;
   email?: string;
-  role: string;
+  relation?: string;
+  is_primary?: boolean;
+}
+
+export interface EventPricing {
+  base_price: number;
+  additional_services: Record<string, number>;
+  discounts: number;
+  taxes: number;
+  total_price: number;
 }
 
 export interface Event {
   id: string;
   event_name: string;
   event_type: string;
-  event_date: string;
+  event_type_other?: string | null;
+  location: string;
+  status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
+  event_date: string; // ISO datetime
   start_time: string;
   end_time: string;
-  guest_count: number;
-  location: string;
-  hall_number?: string;
-  status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
-  customer_name: string;
-  customer_phone: string;
-  customer_email?: string;
-  customer_address?: string;
+  expected_guests: number;
+  actual_guests?: number | null;
+  guest_gender: string;
+  contacts: EventContact[];
+  services: Record<string, boolean>;
   pricing: EventPricing;
   payment_status: 'pending' | 'partial' | 'paid' | 'overdue';
-  total_paid: number;
-  balance_due: number;
-  notes?: string;
-  special_requests?: string;
-  menu_details?: string;
-  decoration_details?: string;
-  contacts: EventContact[];
+  deposit_amount: number;
+  deposit_paid: boolean;
+  outstanding_balance: number;
   assigned_employees: string[];
-  created_by: string;
+  labor_cost: number;
+  total_revenue: number;
+  total_expenses: number;
+  profit: number;
+  profit_margin: number;
   created_at: string;
   updated_at: string;
 }
@@ -50,75 +51,71 @@ export interface Event {
 export interface CreateEventRequest {
   event_name: string;
   event_type: string;
-  event_date: string;
+  event_type_other?: string;
+  location: string;
+  event_date: string; // ISO datetime
   start_time: string;
   end_time: string;
-  guest_count: number;
-  location: string;
-  hall_number?: string;
-  customer_name: string;
-  customer_phone: string;
-  customer_email?: string;
-  customer_address?: string;
-  pricing: Omit<EventPricing, 'final_price'>;
-  notes?: string;
+  setup_time?: string;
+  cleanup_time?: string;
+  expected_guests: number;
+  guest_gender: string;
+  contacts: EventContact[];
+  services: Record<string, boolean>;
   special_requests?: string;
-  menu_details?: string;
+  decoration_type?: string;
   decoration_details?: string;
-  contacts?: EventContact[];
+  menu_selections?: Record<string, string[]>;
+  dietary_restrictions?: string[];
+  pricing: EventPricing;
+  deposit_amount?: number;
+  internal_notes?: string;
 }
 
 export interface UpdateEventRequest extends Partial<CreateEventRequest> {
   status?: Event['status'];
-  payment_status?: Event['payment_status'];
   assigned_employees?: string[];
 }
 
 export interface EventsListParams {
   page?: number;
-  limit?: number;
+  page_size?: number;
   status?: string;
   event_type?: string;
   location?: string;
   search?: string;
   start_date?: string;
   end_date?: string;
-  sort_by?: string;
-  sort_order?: 'asc' | 'desc';
 }
 
 export interface EventsListResponse {
-  data: Event[];
+  items: Event[];
   total: number;
   page: number;
-  limit: number;
+  page_size: number;
   total_pages: number;
 }
 
-export interface EventStats {
+export interface EventStatsOverview {
   total_events: number;
-  upcoming_events: number;
-  completed_events: number;
-  cancelled_events: number;
   total_revenue: number;
-  pending_payments: number;
-  monthly_stats: {
-    month: string;
-    events: number;
-    revenue: number;
-  }[];
+  total_expenses: number;
+  total_profit: number;
+  average_profit_margin: number;
+  status_breakdown: Record<string, number>;
+  type_breakdown: Record<string, number>;
+  upcoming_events: number;
 }
 
 class EventService {
   private socket: Socket | null = null;
   private listeners: Map<string, Set<Function>> = new Map();
 
-  // Initialize WebSocket connection for real-time updates
   initializeSocket(token: string) {
     if (this.socket) return;
 
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
-    
+    const wsUrl = WS_URL;
+
     this.socket = io(wsUrl, {
       auth: { token },
       transports: ['websocket'],
@@ -156,14 +153,12 @@ class EventService {
     this.listeners.clear();
   }
 
-  // Subscribe to real-time updates
   subscribe(event: string, callback: Function) {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set());
     }
     this.listeners.get(event)!.add(callback);
 
-    // Return unsubscribe function
     return () => {
       const callbacks = this.listeners.get(event);
       if (callbacks) {
@@ -179,11 +174,10 @@ class EventService {
     }
   }
 
-  // API Methods
   async getEvents(params?: EventsListParams): Promise<EventsListResponse> {
     const response = await api.get<EventsListResponse>('/events', { params });
     return response.data;
-  }
+    }
 
   async getEvent(id: string): Promise<Event> {
     const response = await api.get<Event>(`/events/${id}`);
@@ -204,38 +198,8 @@ class EventService {
     await api.delete(`/events/${id}`);
   }
 
-  async getEventStats(): Promise<EventStats> {
-    const response = await api.get<EventStats>('/events/stats/overview');
-    return response.data;
-  }
-
-  async duplicateEvent(id: string): Promise<Event> {
-    const response = await api.post<Event>(`/events/${id}/duplicate`);
-    return response.data;
-  }
-
-  async exportEvents(params?: EventsListParams): Promise<Blob> {
-    const response = await api.get('/events/export', {
-      params,
-      responseType: 'blob',
-    });
-    return response.data;
-  }
-
-  // Calendar specific methods
-  async getCalendarEvents(start: string, end: string): Promise<Event[]> {
-    const response = await api.get<Event[]>('/events/calendar', {
-      params: { start_date: start, end_date: end },
-    });
-    return response.data;
-  }
-
-  async updateEventDate(id: string, newDate: string, newStartTime?: string, newEndTime?: string): Promise<Event> {
-    const response = await api.patch<Event>(`/events/${id}/reschedule`, {
-      event_date: newDate,
-      start_time: newStartTime,
-      end_time: newEndTime,
-    });
+  async getEventStats(): Promise<EventStatsOverview> {
+    const response = await api.get<EventStatsOverview>('/events/stats/overview');
     return response.data;
   }
 }

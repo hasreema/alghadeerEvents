@@ -1,12 +1,11 @@
-import apiClient from '@/lib/api/client';
-import { User } from '@/types';
+import api, { setTokens, clearTokens } from '../api';
 
-interface LoginCredentials {
+export interface LoginRequest {
   email: string;
   password: string;
 }
 
-interface RegisterData {
+export interface RegisterRequest {
   email: string;
   username: string;
   full_name: string;
@@ -14,79 +13,85 @@ interface RegisterData {
   phone_number?: string;
   preferred_language?: string;
   department?: string;
+  role?: string;
 }
 
-interface AuthResponse {
+export interface AuthResponse {
   access_token: string;
+  refresh_token?: string;
   token_type: string;
-  user: User;
+  user: {
+    id: string;
+    email: string;
+    username: string;
+    full_name: string;
+    role: string;
+    is_active: boolean;
+    is_verified: boolean;
+    preferred_language: string;
+    avatar_url?: string;
+  };
 }
 
-export class AuthService {
-  static async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/api/auth/login', credentials);
-    
-    // Store token
-    localStorage.setItem('access_token', response.data.access_token);
-    
+export interface User {
+  id: string;
+  email: string;
+  username: string;
+  full_name: string;
+  role: string;
+  is_active: boolean;
+  is_verified: boolean;
+  preferred_language: string;
+  phone_number?: string;
+  department?: string;
+  avatar_url?: string;
+  email_notifications?: boolean;
+  whatsapp_notifications?: boolean;
+  push_notifications?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+class AuthService {
+  async login(credentials: LoginRequest): Promise<AuthResponse> {
+    const response = await api.post<AuthResponse>('/auth/login', credentials);
+    const { access_token, refresh_token, user } = response.data;
+    setTokens(access_token, refresh_token);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user', JSON.stringify(user));
+    }
     return response.data;
   }
 
-  static async register(data: RegisterData): Promise<User> {
-    const response = await apiClient.post<User>('/api/auth/register', data);
+  async register(data: RegisterRequest): Promise<User> {
+    const response = await api.post<User>('/auth/register', data);
     return response.data;
   }
 
-  static async logout(): Promise<void> {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    window.location.href = '/login';
-  }
-
-  static async getCurrentUser(): Promise<User> {
-    const response = await apiClient.get<User>('/api/auth/me');
-    return response.data;
-  }
-
-  static async updateProfile(data: Partial<User>): Promise<User> {
-    const response = await apiClient.put<User>('/api/auth/me', data);
-    return response.data;
-  }
-
-  static async changePassword(currentPassword: string, newPassword: string): Promise<void> {
-    await apiClient.post('/api/auth/change-password', {
-      current_password: currentPassword,
-      new_password: newPassword,
-    });
-  }
-
-  static async forgotPassword(email: string): Promise<void> {
-    await apiClient.post('/api/auth/forgot-password', { email });
-  }
-
-  static async resetPassword(token: string, newPassword: string): Promise<void> {
-    await apiClient.post('/api/auth/reset-password', {
-      token,
-      new_password: newPassword,
-    });
-  }
-
-  static async verifyToken(): Promise<User | null> {
+  async logout(): Promise<void> {
     try {
-      const response = await apiClient.post<User>('/api/auth/verify-token');
-      return response.data;
-    } catch (error) {
-      return null;
+      await api.post('/auth/logout');
+    } catch (_) {
+    } finally {
+      clearTokens();
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
     }
   }
 
-  static isAuthenticated(): boolean {
-    return !!localStorage.getItem('access_token');
+  async getCurrentUser(): Promise<User> {
+    const response = await api.get<User>('/auth/me');
+    return response.data;
   }
 
-  static getAccessToken(): string | null {
-    return localStorage.getItem('access_token');
+  isAuthenticated(): boolean {
+    if (typeof window !== 'undefined') {
+      return !!localStorage.getItem('access_token');
+    }
+    return false;
   }
 }
 
-export default AuthService;
+export default new AuthService();

@@ -24,12 +24,11 @@ interface CalendarEvent {
     status: string;
     location: string;
     guestCount: number;
-    customerName: string;
     paymentStatus: string;
   };
 }
 
-const statusColors = {
+const statusColors: Record<string, string> = {
   pending: '#FFA726',
   confirmed: '#66BB6A',
   in_progress: '#42A5F5',
@@ -45,71 +44,62 @@ const EventCalendar: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [updating, setUpdating] = useState(false);
 
-  // Convert events to calendar format
   useEffect(() => {
     const formattedEvents: CalendarEvent[] = events.map(event => ({
       id: event.id,
-      title: `${event.event_name} - ${event.customer_name}`,
-      start: `${event.event_date}T${event.start_time}`,
-      end: `${event.event_date}T${event.end_time}`,
-      backgroundColor: statusColors[event.status],
-      borderColor: statusColors[event.status],
+      title: event.event_name,
+      start: event.event_date,
+      end: event.event_date,
+      backgroundColor: statusColors[event.status] || '#9E9E9E',
+      borderColor: statusColors[event.status] || '#9E9E9E',
       extendedProps: {
         status: event.status,
         location: event.location,
-        guestCount: event.guest_count,
-        customerName: event.customer_name,
+        guestCount: event.expected_guests,
         paymentStatus: event.payment_status,
       },
     }));
     setCalendarEvents(formattedEvents);
   }, [events]);
 
-  // Handle event drop (drag & drop)
   const handleEventDrop = async (info: EventDropArg) => {
     const { event } = info;
     const newDate = format(event.start!, 'yyyy-MM-dd');
-    const newStartTime = format(event.start!, 'HH:mm:ss');
-    const newEndTime = format(event.end!, 'HH:mm:ss');
+    const newStartTime = format(event.start!, 'HH:mm');
+    const newEndTime = event.end ? format(event.end!, 'HH:mm') : undefined;
 
     setUpdating(true);
     try {
-      await eventService.updateEventDate(
-        event.id,
-        newDate,
-        newStartTime,
-        newEndTime
-      );
-      
-      // Refresh events
+      await eventService.updateEvent(event.id, {
+        event_date: new Date(newDate).toISOString(),
+        start_time: newStartTime,
+        end_time: newEndTime,
+      } as any);
       await fetchEvents();
     } catch (error) {
-      // Revert the change
       info.revert();
+      // eslint-disable-next-line no-console
       console.error('Failed to update event date:', error);
     } finally {
       setUpdating(false);
     }
   };
 
-  // Handle event click
   const handleEventClick = (info: EventClickArg) => {
     setSelectedEvent(info.event.id);
   };
 
-  // Handle date selection
   const handleDateSelect = (info: DateSelectArg) => {
     setSelectedDate(info.start);
     setCreateDialogOpen(true);
   };
 
-  // Event content renderer
   const renderEventContent = (eventInfo: any) => {
     const { event } = eventInfo;
     return (
       <Box sx={{ p: 0.5, overflow: 'hidden' }}>
         <Typography variant="caption" sx={{ fontWeight: 'bold', display: 'block' }}>
-          {event.extendedProps.customerName}
+          {event.title}
         </Typography>
         <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
           {event.extendedProps.location} • {event.extendedProps.guestCount} guests
@@ -200,7 +190,6 @@ const EventCalendar: React.FC = () => {
         }}
       />
 
-      {/* Event Details Modal */}
       {selectedEvent && (
         <EventDetailsModal
           eventId={selectedEvent}
@@ -209,7 +198,6 @@ const EventCalendar: React.FC = () => {
         />
       )}
 
-      {/* Create Event Dialog */}
       <CreateEventDialog
         open={createDialogOpen}
         onClose={() => {

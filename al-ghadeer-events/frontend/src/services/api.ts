@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 
 // API base URL from environment variable
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+import { API_URL as API_BASE_URL } from '../config';
 
 // Token storage keys
 const ACCESS_TOKEN_KEY = 'access_token';

@@ -10,7 +10,7 @@ import {
   CheckCircle,
   Clock
 } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '../../lib/utils';
 
 // Mock data - replace with API calls
 const stats = {

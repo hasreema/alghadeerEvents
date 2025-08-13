@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { User } from '@/types';
-import AuthService from '@/services/auth/auth.service';
+import type { User } from '../services/auth/authService';
+import AuthService from '../services/auth/authService';
 
 interface AuthState {
   user: User | null;
@@ -31,7 +31,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           const response = await AuthService.login({ email, password });
           set({
-            user: response.user,
+            user: response.user as unknown as User,
             isAuthenticated: true,
             isLoading: false,
             error: null,
@@ -76,7 +76,7 @@ export const useAuthStore = create<AuthState>()(
 
         set({ isLoading: true });
         try {
-          const user = await AuthService.verifyToken();
+          const user = await AuthService.getCurrentUser();
           if (user) {
             set({
               user,
