@@ -57,6 +57,18 @@ export default function EventCreatePage() {
   // Special requests
   const [requestsByLocation, setRequestsByLocation] = useState<Record<string, RequestItem[]>>({});
   const [customRequestsByLocation, setCustomRequestsByLocation] = useState<Record<string, RequestItem[]>>({});
+
+  // Description
+  const [description, setDescription] = useState('');
+
+  // Expected guests per location or total fallback
+  const [expectedGuestsTotal, setExpectedGuestsTotal] = useState(100);
+  const [expectedGuestsByLocation, setExpectedGuestsByLocation] = useState<Record<string, number>>({});
+  const perLocationKeys = useMemo(
+    () => [...selectedLocations, ...(customLocation ? [customLocation] : [])],
+    [selectedLocations, customLocation]
+  );
+
   // ensure defaults for each active location key
   useEffect(() => {
     const keys = perLocationKeys;
@@ -85,17 +97,6 @@ export default function EventCreatePage() {
       return next;
     });
   }, [perLocationKeys]);
-
-  // Description
-  const [description, setDescription] = useState('');
-
-  // Expected guests per location or total fallback
-  const [expectedGuestsTotal, setExpectedGuestsTotal] = useState(100);
-  const [expectedGuestsByLocation, setExpectedGuestsByLocation] = useState<Record<string, number>>({});
-  const perLocationKeys = useMemo(
-    () => [...selectedLocations, ...(customLocation ? [customLocation] : [])],
-    [selectedLocations, customLocation]
-  );
   const setGuestsForLocation = (loc: string, val: number) =>
     setExpectedGuestsByLocation((prev) => ({ ...prev, [loc]: val }));
   const perLocationTotal = useMemo(
