@@ -55,8 +55,36 @@ export default function EventCreatePage() {
   const [paid_deposit_amount, setPaidDepositAmount] = useState(0);
 
   // Special requests
-  const [requests, setRequests] = useState<RequestItem[]>(DEFAULT_REQUESTS);
-  const [customRequests, setCustomRequests] = useState<RequestItem[]>([]);
+  const [requestsByLocation, setRequestsByLocation] = useState<Record<string, RequestItem[]>>({});
+  const [customRequestsByLocation, setCustomRequestsByLocation] = useState<Record<string, RequestItem[]>>({});
+  // ensure defaults for each active location key
+  useEffect(() => {
+    const keys = perLocationKeys;
+    setRequestsByLocation((prev) => {
+      const next = { ...prev };
+      keys.forEach((k) => {
+        if (!next[k]) {
+          // include Drinks in default list
+          next[k] = [
+            { key: 'dj', label: 'DJ', selected: false, cost: 0, provider: 'Hall' },
+            { key: 'cake', label: 'Cake', selected: false, cost: 0, provider: 'Hall', quantity: 1 },
+            { key: 'fruits', label: 'Fruits', selected: false, cost: 0, provider: 'Hall' },
+            { key: 'nuts', label: 'Nuts', selected: false, cost: 0, provider: 'Hall' },
+            { key: 'drinks', label: 'Drinks', selected: false, cost: 0, provider: 'Hall' },
+          ];
+        }
+      });
+      // prune removed keys
+      Object.keys(next).forEach((k) => { if (!keys.includes(k)) delete (next as any)[k]; });
+      return next;
+    });
+    setCustomRequestsByLocation((prev) => {
+      const next = { ...prev };
+      keys.forEach((k) => { if (!next[k]) next[k] = []; });
+      Object.keys(next).forEach((k) => { if (!keys.includes(k)) delete (next as any)[k]; });
+      return next;
+    });
+  }, [perLocationKeys]);
 
   // Description
   const [description, setDescription] = useState('');
@@ -75,7 +103,13 @@ export default function EventCreatePage() {
     [perLocationKeys, expectedGuestsByLocation]
   );
 
-  const allRequests = useMemo(() => [...requests, ...customRequests], [requests, customRequests]);
+  const allRequestsByLocation = useMemo(() => {
+    const map: Record<string, RequestItem[]> = {};
+    perLocationKeys.forEach((k) => {
+      map[k] = [ ...(requestsByLocation[k] || []), ...(customRequestsByLocation[k] || []) ];
+    });
+    return map;
+  }, [perLocationKeys, requestsByLocation, customRequestsByLocation]);
 
   useEffect(() => {
     if (dateFromQuery && !event_date) {
@@ -86,23 +120,21 @@ export default function EventCreatePage() {
     }
   }, [dateFromQuery, event_date]);
 
-  const toggleRequest = (arr: RequestItem[], idx: number, patch: Partial<RequestItem>, isCustom: boolean) => {
+  const toggleRequestAt = (loc: string, arr: RequestItem[], idx: number, patch: Partial<RequestItem>, isCustom: boolean) => {
     const copy = [...arr];
     copy[idx] = { ...copy[idx], ...patch } as RequestItem;
-    (isCustom ? setCustomRequests : setRequests)(copy);
+    if (isCustom) {
+      setCustomRequestsByLocation((prev) => ({ ...prev, [loc]: copy }));
+    } else {
+      setRequestsByLocation((prev) => ({ ...prev, [loc]: copy }));
+    }
   };
 
-  const addCustomRequest = () => {
+  const addCustomRequestFor = (loc: string) => {
     const label = prompt('Enter custom request name');
     if (!label) return;
-    const item: RequestItem = {
-      key: sanitizeKey(label),
-      label,
-      selected: true,
-      cost: 0,
-      provider: 'Hall',
-    };
-    setCustomRequests((prev) => [...prev, item]);
+    const item: RequestItem = { key: sanitizeKey(label), label, selected: true, cost: 0, provider: 'Hall' };
+    setCustomRequestsByLocation((prev) => ({ ...prev, [loc]: [ ...(prev[loc] || []), item ] }));
   };
 
   const addPhone = () => setPhoneNumbers((p) => [...p, '']);
@@ -112,21 +144,26 @@ export default function EventCreatePage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Build services flags and additional service costs
+    // Build services flags and additional service costs aggregated across locations
     const services: Record<string, boolean> = {};
     const additional_services: Record<string, number> = {};
-
     const parts: string[] = [];
-
-    allRequests.forEach((r) => {
-      if (r.selected) {
-        services[r.key] = true;
-        if (r.cost && r.cost > 0) additional_services[r.key] = r.cost;
-        let line = `${r.label}: ${r.provider}`;
-        if (typeof r.quantity === 'number') line += `, Qty: ${r.quantity}`;
-        if (r.cost && r.cost > 0) line += `, Cost: ${r.cost}₪`;
-        parts.push(line);
-      }
+    perLocationKeys.forEach((loc) => {
+      const rows = allRequestsByLocation[loc] || [];
+      const locLines: string[] = [];
+      rows.forEach((r) => {
+        if (r.selected) {
+          services[r.key] = true;
+          if (r.cost && r.cost > 0) {
+            additional_services[r.key] = (additional_services[r.key] || 0) + r.cost;
+          }
+          let line = `${r.label}: ${r.provider}`;
+          if (typeof r.quantity === 'number') line += `, Qty: ${r.quantity}`;
+          if (r.cost && r.cost > 0) line += `, Cost: ${r.cost}₪`;
+          locLines.push(line);
+        }
+      });
+      if (locLines.length) parts.push(`${loc} -> ${locLines.join(' | ')}`);
     });
 
     if (paid_deposit_amount > 0) parts.push(`Paid deposit: ${paid_deposit_amount}₪`);
@@ -289,65 +326,60 @@ export default function EventCreatePage() {
           <input type="number" className="border rounded px-3 py-2 w-full" value={paid_deposit_amount} onChange={(e) => setPaidDepositAmount(parseFloat(e.target.value || '0'))} />
         </div>
 
-        {/* Special Requests */}
+        {/* Special Requests per Location */}
         <div className="md:col-span-2">
-          <label className="block text-sm mb-2">Special Requests / Additions</label>
-          <div className="grid gap-3">
-            {requests.map((r, idx) => (
-              <div key={r.key} className="border rounded p-3">
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={r.selected} onChange={(e) => toggleRequest(requests, idx, { selected: e.target.checked }, false)} />
-                  <span>{r.label}</span>
-                </label>
-                {r.selected && (
-                  <div className="mt-2 grid gap-2 md:grid-cols-3">
-                    {r.label === 'Cake' && (
-                      <div>
-                        <span className="block text-xs text-gray-600 mb-1">Quantity</span>
-                        <input type="number" className="border rounded px-2 py-1 w-full" value={r.quantity || 1} onChange={(e) => toggleRequest(requests, idx, { quantity: parseInt(e.target.value || '1', 10) }, false)} />
+          <label className="block text-sm mb-2">Special Requests / Additions (per location)</label>
+          <div className="grid gap-4">
+            {perLocationKeys.map((loc) => {
+              const base = requestsByLocation[loc] || [];
+              const customs = customRequestsByLocation[loc] || [];
+              return (
+                <div key={`req_${loc}`} className="border rounded p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-semibold text-gray-800">{loc}</h3>
+                    <button type="button" className="px-2 py-1 border rounded text-sm" onClick={() => addCustomRequestFor(loc)}>Add Custom</button>
+                  </div>
+                  {[...base, ...customs].map((r, idx) => {
+                    const isCustom = idx >= base.length;
+                    const arr = isCustom ? customs : base;
+                    const arrIdx = isCustom ? idx - base.length : idx;
+                    return (
+                      <div key={`${loc}_${r.key}_${idx}`} className="border rounded p-3 mb-2">
+                        <label className="flex items-center gap-2">
+                          <input type="checkbox" checked={r.selected} onChange={(e) => toggleRequestAt(loc, arr, arrIdx, { selected: e.target.checked }, isCustom)} />
+                          {isCustom ? (
+                            <input className="border rounded px-2 py-1 flex-1" value={r.label} onChange={(e) => toggleRequestAt(loc, arr, arrIdx, { label: e.target.value, key: sanitizeKey(e.target.value) }, isCustom)} />
+                          ) : (
+                            <span>{r.label}</span>
+                          )}
+                        </label>
+                        {r.selected && (
+                          <div className="mt-2 grid gap-2 md:grid-cols-3">
+                            {r.label.toLowerCase() === 'cake' && (
+                              <div>
+                                <span className="block text-xs text-gray-600 mb-1">Quantity</span>
+                                <input type="number" className="border rounded px-2 py-1 w-full" value={r.quantity || 1} onChange={(e) => toggleRequestAt(loc, arr, arrIdx, { quantity: parseInt(e.target.value || '1', 10) }, isCustom)} />
+                              </div>
+                            )}
+                            <div>
+                              <span className="block text-xs text-gray-600 mb-1">Cost (₪)</span>
+                              <input type="number" className="border rounded px-2 py-1 w-full" value={r.cost} onChange={(e) => toggleRequestAt(loc, arr, arrIdx, { cost: parseFloat(e.target.value || '0') }, isCustom)} />
+                            </div>
+                            <div>
+                              <span className="block text-xs text-gray-600 mb-1">Provider</span>
+                              <select className="border rounded px-2 py-1 w-full" value={r.provider} onChange={(e) => toggleRequestAt(loc, arr, arrIdx, { provider: e.target.value as Provider }, isCustom)}>
+                                <option value="Hall">Hall</option>
+                                <option value="Client">Client</option>
+                              </select>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                    <div>
-                      <span className="block text-xs text-gray-600 mb-1">Cost (₪)</span>
-                      <input type="number" className="border rounded px-2 py-1 w-full" value={r.cost} onChange={(e) => toggleRequest(requests, idx, { cost: parseFloat(e.target.value || '0') }, false)} />
-                    </div>
-                    <div>
-                      <span className="block text-xs text-gray-600 mb-1">Provider</span>
-                      <select className="border rounded px-2 py-1 w-full" value={r.provider} onChange={(e) => toggleRequest(requests, idx, { provider: e.target.value as Provider }, false)}>
-                        <option value="Hall">Hall</option>
-                        <option value="Client">Client</option>
-                      </select>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {customRequests.map((r, idx) => (
-              <div key={`custom_${idx}`} className="border rounded p-3">
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={r.selected} onChange={(e) => toggleRequest(customRequests, idx, { selected: e.target.checked }, true)} />
-                  <input className="border rounded px-2 py-1 flex-1" value={r.label} onChange={(e) => toggleRequest(customRequests, idx, { label: e.target.value, key: sanitizeKey(e.target.value) }, true)} />
-                </label>
-                {r.selected && (
-                  <div className="mt-2 grid gap-2 md:grid-cols-2">
-                    <div>
-                      <span className="block text-xs text-gray-600 mb-1">Cost (₪)</span>
-                      <input type="number" className="border rounded px-2 py-1 w-full" value={r.cost} onChange={(e) => toggleRequest(customRequests, idx, { cost: parseFloat(e.target.value || '0') }, true)} />
-                    </div>
-                    <div>
-                      <span className="block text-xs text-gray-600 mb-1">Provider</span>
-                      <select className="border rounded px-2 py-1 w-full" value={r.provider} onChange={(e) => toggleRequest(customRequests, idx, { provider: e.target.value as Provider }, true)}>
-                        <option value="Hall">Hall</option>
-                        <option value="Client">Client</option>
-                      </select>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-
-            <button type="button" className="px-3 py-2 border rounded" onClick={addCustomRequest}>Add Custom Request</button>
+                    );
+                  })}
+                </div>
+              );
+            })}
           </div>
         </div>
 
